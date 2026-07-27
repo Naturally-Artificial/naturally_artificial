@@ -251,38 +251,41 @@
 }
 
 @media (max-width: 767px) {
+  /* One screen, nothing clipped. svh is the viewport height with the browser
+     toolbars showing, so the composition still fits when Safari's bars are
+     down. The portrait takes whatever height the type and teaser leave. */
   .hero {
     aspect-ratio: auto;
-    min-height: 640px;
-    padding: 96px var(--pad) 40px;
+    /* a fixed height, not a minimum — with min-height the hero would grow to
+       fit its content and the portrait would never shrink */
+    height: 100vh;
+    height: 100svh;
+    min-height: 540px;
+    padding: 78px var(--pad) 22px;
     display: flex;
     flex-direction: column;
+    gap: 14px;
   }
 
+  /* All three shapes sit in the band the portrait occupies (roughly 21–75%
+     of the hero), so the white headings above and below always land on
+     black. On a phone there is no room to overlap type and stay legible. */
   .hero__shape--top {
-    width: 40%;
+    width: 44%;
+    left: -14%;
+    top: 24%;
   }
 
   .hero__shape--left {
-    width: 130%;
-    left: -20%;
+    width: 118%;
+    left: -34%;
     top: 30%;
   }
 
   .hero__shape--right {
-    width: 90%;
-    left: 40%;
-    top: 75%;
-  }
-
-  .hero__portrait {
-    position: relative;
-    left: auto;
-    top: auto;
-    width: 82%;
-    margin: 0 auto;
-    transform: rotate(-3.24deg);
-    order: 1;
+    width: 84%;
+    left: 34%;
+    top: 56%;
   }
 
   .hero__title {
@@ -290,40 +293,61 @@
     left: auto;
     top: auto;
     width: auto;
-    font-size: clamp(40px, 12vw, 54px);
-    line-height: 0.9;
-    letter-spacing: -0.06em;
+    flex: none;
+    font-size: clamp(31px, 9.4vw, 42px);
+    line-height: 0.88;
+    letter-spacing: -0.055em;
   }
 
   .hero__title--left {
     order: 0;
-    margin-bottom: 24px;
+  }
+
+  .hero__portrait {
+    position: relative;
+    left: auto;
+    top: auto;
+    order: 1;
+    /* basis 0 so the portrait takes exactly the space the type leaves over,
+       however short the screen is */
+    flex: 1 1 0;
+    min-height: 0;
+    width: 84%;
+    object-fit: contain;
+    object-position: center bottom;
+    align-self: center;
+    transform: rotate(-3.24deg);
   }
 
   .hero__title--right {
     order: 2;
-    margin-top: 24px;
     text-align: right;
     align-self: flex-end;
+  }
+
+  .hero__teaser {
+    order: 3;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 2px;
   }
 
   .hero__reel {
     position: relative;
     left: auto;
     top: auto;
-    width: 152px;
-    order: 3;
-    margin-top: 32px;
+    width: 132px;
+    flex: none;
   }
 
   .hero__reel-label {
     position: relative;
     left: auto;
     top: auto;
-    width: 130px;
+    width: auto;
     font-size: 12px;
-    order: 4;
-    margin-top: 12px;
+    line-height: 1.3;
   }
 
   .hero__arrow {

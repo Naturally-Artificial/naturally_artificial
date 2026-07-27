@@ -14,8 +14,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=11">
-  <link rel="stylesheet" href="css/home.css?v=11">
+  <link rel="stylesheet" href="css/styles.css?v=12">
+  <link rel="stylesheet" href="css/home.css?v=12">
 </head>
 <body id="top">
 
@@ -48,10 +48,15 @@ Investor  and</h1>
 Naturally
 Artificial</p>
 
-    <a class="hero__reel" href="#reel" aria-label="Watch the podcast intro">
-      <img src="assets/podcast-cover.jpg" alt="Founder-to-Founder Talks in AI Era" width="720" height="405">
-    </a>
-    <p class="hero__reel-label">About the podcast (0:28)</p>
+    <!-- the wrapper only matters on mobile, where it puts the thumbnail and
+         its label side by side; on desktop both children are positioned
+         absolutely and ignore it -->
+    <div class="hero__teaser">
+      <a class="hero__reel" href="#reel" aria-label="Watch the podcast intro">
+        <img src="assets/podcast-cover.jpg" alt="Founder-to-Founder Talks in AI Era" width="720" height="405">
+      </a>
+      <p class="hero__reel-label">About the podcast (0:28)</p>
+    </div>
 
     <a class="hero__arrow" href="#reel" aria-label="Scroll down">
       <img src="assets/arrow-down.svg" alt="">
@@ -230,6 +235,6 @@ Artificial</p>
     </div>
   </footer>
 
-  <script src="js/main.js?v=11"></script>
+  <script src="js/main.js?v=12"></script>
 </body>
 </html>
