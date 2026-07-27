@@ -5,11 +5,22 @@
 
 /* ---------- Hero ---------- */
 
+/* the teaser is positioned against this, not against .hero, so it can leave
+   the hero and become its own band on mobile */
+.hero-wrap {
+  position: relative;
+}
+
 .hero {
   position: relative;
   background: var(--c-black);
   overflow: hidden;
   aspect-ratio: 1440 / 700;
+  color: var(--c-white);
+}
+
+/* the label used to inherit white from .hero — it sits outside it now */
+.hero-teaser {
   color: var(--c-white);
 }
 
@@ -251,41 +262,39 @@
 }
 
 @media (max-width: 767px) {
-  /* One screen, nothing clipped. svh is the viewport height with the browser
-     toolbars showing, so the composition still fits when Safari's bars are
-     down. The portrait takes whatever height the type and teaser leave. */
+  /* Both headings at the top, the portrait pinned to the bottom edge, the
+     teaser moved out into its own band below. svh, not vh, so the screen
+     still fits with Safari's toolbars showing. */
   .hero {
     aspect-ratio: auto;
     /* a fixed height, not a minimum — with min-height the hero would grow to
        fit its content and the portrait would never shrink */
     height: 100vh;
     height: 100svh;
-    min-height: 540px;
-    padding: 78px var(--pad) 22px;
+    min-height: 500px;
+    padding: 78px 0 0;
     display: flex;
     flex-direction: column;
-    gap: 14px;
   }
 
-  /* All three shapes sit in the band the portrait occupies (roughly 21–75%
-     of the hero), so the white headings above and below always land on
-     black. On a phone there is no room to overlap type and stay legible. */
+  /* same arrangement as the desktop frame — a tall shape down the left near
+     the top, the big blob across the middle, one more at the bottom right */
   .hero__shape--top {
-    width: 44%;
-    left: -14%;
-    top: 24%;
+    width: 36%;
+    left: -8%;
+    top: 6%;
   }
 
   .hero__shape--left {
-    width: 118%;
-    left: -34%;
-    top: 30%;
+    width: 104%;
+    left: -18%;
+    top: 32%;
   }
 
   .hero__shape--right {
-    width: 84%;
-    left: 34%;
-    top: 56%;
+    width: 82%;
+    left: 40%;
+    top: 70%;
   }
 
   .hero__title {
@@ -294,6 +303,7 @@
     top: auto;
     width: auto;
     flex: none;
+    padding: 0 var(--pad);
     font-size: clamp(31px, 9.4vw, 42px);
     line-height: 0.88;
     letter-spacing: -0.055em;
@@ -303,41 +313,44 @@
     order: 0;
   }
 
+  .hero__title--right {
+    order: 1;
+    margin-top: 14px;
+    text-align: right;
+  }
+
   .hero__portrait {
     position: relative;
     left: auto;
     top: auto;
-    order: 1;
-    /* basis 0 so the portrait takes exactly the space the type leaves over,
-       however short the screen is */
+    order: 2;
+    /* basis 0 so the portrait takes exactly the space the type leaves over;
+       margin-top:auto plus object-position:bottom pin it to the hero's edge */
     flex: 1 1 0;
     min-height: 0;
-    width: 84%;
+    margin-top: auto;
+    width: 92%;
     object-fit: contain;
     object-position: center bottom;
     align-self: center;
     transform: rotate(-3.24deg);
   }
 
-  .hero__title--right {
-    order: 2;
-    text-align: right;
-    align-self: flex-end;
-  }
-
-  .hero__teaser {
-    order: 3;
+  /* its own band under the hero, on the same black */
+  .hero-teaser {
+    position: static;
+    background: var(--c-black);
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-top: 2px;
+    gap: 16px;
+    padding: 20px var(--pad) 28px;
   }
 
   .hero__reel {
     position: relative;
     left: auto;
     top: auto;
-    width: 132px;
+    width: 136px;
     flex: none;
   }
 
