@@ -1,0 +1,17 @@
+# The site is plain HTML — nothing to compile. The build step only refreshes
+# the YouTube and Telegram feeds, so a network hiccup there must not block a
+# deploy: the generated markup is committed, and Netlify then serves the last
+# good version.
+[build]
+  command = "python3 build.py || true"
+  publish = "."
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

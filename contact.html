@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — Sergey Osipov</title>
+  <meta name="description" content="Contact Sergey Osipov — apply as a guest for Naturally Artificial, send a speaking invitation, or reach out about business and partnerships.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=11">
+  <link rel="stylesheet" href="css/contact.css?v=11">
+</head>
+<body id="top" class="contact-page">
+
+  <header class="site-header site-header--dark">
+    <a class="site-header__logo" href="index.html" aria-label="Naturally Artificial — home">
+      <img src="assets/logo.svg" alt="Naturally Artificial">
+    </a>
+    <nav class="site-header__nav" aria-label="Main navigation">
+      <a href="about.html">About,</a>
+      <a href="show.html">Show,</a>
+      <a href="telegram.html">Telegram,</a>
+      <a href="speaking.html">Speaking</a>
+    </nav>
+    <a class="site-header__contact" href="contact.html" aria-current="page">Contact Sergey</a>
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+  </header>
+
+  <main>
+    <section class="marquee" style="--marquee-duration: 22s">
+      <h1 class="marquee__track">
+        <span class="marquee__item">Guest, speaker, or partner — let's talk.</span>
+        <span class="marquee__item" aria-hidden="true">Guest, speaker, or partner — let's talk.</span>
+      </h1>
+    </section>
+
+    <section class="contact-lead container">
+      <p class="contact-lead__label">Contact</p>
+      <p class="contact-lead__text">Pick the form that fits — Sergey reads every message and replies within 48 hours</p>
+    </section>
+
+    <!-- ================= Forms ================= -->
+    <section class="contact-forms container">
+
+      <article class="contact-form" id="guest">
+        <p class="contact-form__num">01</p>
+        <h2 class="contact-form__title">Apply as a guest</h2>
+        <p class="contact-form__sub">Founders building something real in the AI era — suggest yourself for Naturally Artificial.</p>
+        <form name="guest" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+          <input type="hidden" name="form-name" value="guest">
+          <p class="hp-field"><label>Leave this empty: <input name="bot-field"></label></p>
+          <div>
+            <label for="guest-name">Name</label>
+            <input type="text" id="guest-name" name="name" required autocomplete="name">
+          </div>
+          <div>
+            <label for="guest-email">Email</label>
+            <input type="email" id="guest-email" name="email" placeholder="Alexsmith@gmail.com" required autocomplete="email">
+            <p class="contact-form__error">Please enter a valid email address.</p>
+          </div>
+          <div>
+            <label for="guest-company">Company / project</label>
+            <input type="text" id="guest-company" name="company" autocomplete="organization">
+          </div>
+          <div>
+            <label for="guest-message">What are you building?</label>
+            <textarea id="guest-message" name="message" required></textarea>
+          </div>
+          <p class="contact-form__error contact-form__error--general">Please fill in the required fields.</p>
+          <p class="contact-form__success">Message sent — Sergey replies within 48 hours.</p>
+          <button type="submit">Apply as a guest</button>
+        </form>
+      </article>
+
+      <article class="contact-form" id="speaking">
+        <p class="contact-form__num">02</p>
+        <h2 class="contact-form__title">Speaking invitation</h2>
+        <p class="contact-form__sub">Keynotes, panels, fireside chats and podcasts. Share the event details.</p>
+        <form name="speaking" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+          <input type="hidden" name="form-name" value="speaking">
+          <p class="hp-field"><label>Leave this empty: <input name="bot-field"></label></p>
+          <div>
+            <label for="speak-name">Name</label>
+            <input type="text" id="speak-name" name="name" required autocomplete="name">
+          </div>
+          <div>
+            <label for="speak-email">Email</label>
+            <input type="email" id="speak-email" name="email" placeholder="Alexsmith@gmail.com" required autocomplete="email">
+            <p class="contact-form__error">Please enter a valid email address.</p>
+          </div>
+          <div>
+            <label for="speak-event">Event, date &amp; location</label>
+            <input type="text" id="speak-event" name="event" required>
+          </div>
+          <div>
+            <label for="speak-message">Format &amp; topic</label>
+            <textarea id="speak-message" name="message" required></textarea>
+          </div>
+          <p class="contact-form__error contact-form__error--general">Please fill in the required fields.</p>
+          <p class="contact-form__success">Message sent — Sergey replies within 48 hours.</p>
+          <button type="submit">Send invitation</button>
+        </form>
+      </article>
+
+      <article class="contact-form" id="partnerships">
+        <p class="contact-form__num">03</p>
+        <h2 class="contact-form__title">Business &amp; partnerships</h2>
+        <p class="contact-form__sub">Pitch your project, propose an investment or partnership opportunity.</p>
+        <form name="partnerships" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+          <input type="hidden" name="form-name" value="partnerships">
+          <p class="hp-field"><label>Leave this empty: <input name="bot-field"></label></p>
+          <div>
+            <label for="biz-name">Name</label>
+            <input type="text" id="biz-name" name="name" required autocomplete="name">
+          </div>
+          <div>
+            <label for="biz-email">Email</label>
+            <input type="email" id="biz-email" name="email" placeholder="Alexsmith@gmail.com" required autocomplete="email">
+            <p class="contact-form__error">Please enter a valid email address.</p>
+          </div>
+          <div>
+            <label for="biz-company">Company</label>
+            <input type="text" id="biz-company" name="company" autocomplete="organization">
+          </div>
+          <div>
+            <label for="biz-message">Your proposal</label>
+            <textarea id="biz-message" name="message" required></textarea>
+          </div>
+          <p class="contact-form__error contact-form__error--general">Please fill in the required fields.</p>
+          <p class="contact-form__success">Message sent — Sergey replies within 48 hours.</p>
+          <button type="submit">Get in touch</button>
+        </form>
+      </article>
+    </section>
+  </main>
+
+  <!-- ================= Footer ================= -->
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <div class="site-footer__top">
+        <p class="site-footer__heading">Let Sergey inspire<br>your next leap forward</p>
+        <a class="site-footer__book" href="#speaking">Book Sergey</a>
+      </div>
+      <hr class="site-footer__divider">
+      <div class="site-footer__cols">
+        <div class="site-footer__col">
+          <p class="site-footer__col-title">Navigate</p>
+          <ul>
+            <li><a href="about.html">About</a></li>
+            <li><a href="show.html">Show</a></li>
+            <li><a href="telegram.html">Telegram</a></li>
+            <li><a href="speaking.html">Speaking</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__col">
+          <p class="site-footer__col-title">Naturally Artificial</p>
+          <ul>
+            <li><a href="https://t.me/naturally_artificial" target="_blank" rel="noopener">Telegram</a></li>
+            <li><a href="https://www.youtube.com/@Naturally_Artificial" target="_blank" rel="noopener">YouTube</a></li>
+            <li><a href="https://open.spotify.com/show/033U1gDnjee2ValRcN3vWX" target="_blank" rel="noopener">Spotify</a></li>
+            <li><a href="https://www.linkedin.com/company/naturally-artificial/" target="_blank" rel="noopener">LinkedIn</a></li>
+            <li><a href="https://www.instagram.com/naturally__artificial/" target="_blank" rel="noopener">Instagram</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__col">
+          <p class="site-footer__col-title">Sergey Osipov</p>
+          <ul>
+            <li><a href="https://www.linkedin.com/in/osipov/" target="_blank" rel="noopener">LinkedIn</a></li>
+            <li><a href="https://www.instagram.com/os_on_the_island/" target="_blank" rel="noopener">Instagram</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__col site-footer__col--right">
+          <p class="site-footer__col-title">Links</p>
+          <ul>
+            <li><a href="#">Download press kit</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="site-footer__bottom">
+        <p>Copyright © Joox LTD</p>
+        <a class="back-to-top" href="#top">Back to top <img src="assets/arrow-up.svg" alt=""></a>
+        <a href="#">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js?v=11"></script>
+</body>
+</html>

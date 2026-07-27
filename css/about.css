@@ -1,0 +1,286 @@
+/* ============================================================
+   About page
+   ============================================================ */
+
+.about-page {
+  padding-top: 89px; /* header height */
+}
+
+/* ---------- Intro ---------- */
+
+.about-lead {
+  margin-top: 106px;
+}
+
+.about-lead__label {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.about-lead__text {
+  font-size: 42px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: normal;
+  text-indent: 205px;
+  max-width: 906px;
+}
+
+/* ---------- Bio: photo + three sections ---------- */
+
+.about-bio {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 100px;
+}
+
+.about-bio__media {
+  max-width: 284px;
+}
+
+.about-bio__photo {
+  width: 284px;
+  height: 385px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.about-bio__socials {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.about-bio__socials a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 57px;
+  height: 48px;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.about-bio__socials a:hover {
+  background: var(--c-black);
+  color: var(--c-white);
+}
+
+.about-bio__socials svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.about-bio__col {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  max-width: 634px;
+  padding-left: 17px;
+}
+
+.about-bio__section h2 {
+  font-size: 42px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: normal;
+}
+
+.about-bio__section p {
+  margin-top: 15px;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  color: var(--c-gray);
+  max-width: 533px;
+}
+
+/* ---------- (01) Timeline ---------- */
+
+.timeline-section {
+  margin-top: 150px;
+}
+
+.timeline-section .section-head {
+  --content-col: 263px;
+}
+
+.timeline {
+  position: relative;
+  margin-top: 151px;
+  margin-left: 206px; /* 256 - container pad 50 */
+  width: 815px;
+  max-width: calc(100% - 206px);
+  height: 878px;
+}
+
+.timeline__line {
+  position: absolute;
+  left: 0.86%;
+  top: 4.21%;
+  width: 3%;
+  height: 87%;
+}
+
+.timeline__entry {
+  position: absolute;
+  left: 10.92%;
+  width: 44%;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.timeline__entry--active {
+  left: 6.75%;
+  right: -1.72%;
+  width: auto;
+  background: #f9f9f9;
+  border-radius: 5px;
+  padding: 24px 34px;
+}
+
+.timeline__entry--dim {
+  opacity: 0.4;
+}
+
+.timeline__year {
+  font-weight: 700;
+  letter-spacing: -0.06em;
+}
+
+.timeline__desc {
+  margin-top: 5px;
+  color: var(--c-gray);
+  line-height: normal;
+}
+
+.timeline__desc .t-strong {
+  color: var(--c-black);
+}
+
+/* ---------- (02) Topics ---------- */
+
+.topics-section {
+  margin-top: 164px;
+  padding-bottom: 159px;
+}
+
+.topics-section .section-head {
+  --content-col: 282px;
+}
+
+.topics-section .card-grid {
+  margin-top: 80px;
+}
+
+.topics-section .wid-card__title {
+  max-width: 320px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1024px) {
+  .about-lead {
+    margin-top: 70px;
+  }
+
+  .about-lead__text {
+    font-size: 32px;
+    text-indent: 120px;
+  }
+
+  .about-bio {
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+  }
+
+  .about-bio__col {
+    padding-left: 0;
+  }
+
+  .about-bio__section h2 {
+    font-size: 34px;
+  }
+
+  .timeline-section,
+  .topics-section {
+    margin-top: 100px;
+  }
+
+  .timeline {
+    margin-left: 120px;
+    max-width: calc(100% - 120px);
+  }
+}
+
+@media (max-width: 767px) {
+  .about-page {
+    padding-top: 70px;
+  }
+
+  .about-lead {
+    margin-top: 40px;
+  }
+
+  .about-lead__text {
+    font-size: 26px;
+    text-indent: 48px;
+    margin-top: 10px;
+  }
+
+  .about-bio {
+    grid-template-columns: 1fr;
+    margin-top: 56px;
+  }
+
+  .about-bio__photo {
+    width: 100%;
+    max-width: 340px;
+    height: auto;
+    aspect-ratio: 284 / 385;
+  }
+
+  .about-bio__section p {
+    font-size: 17px;
+    line-height: 26px;
+  }
+
+  .timeline-section,
+  .topics-section {
+    margin-top: 72px;
+  }
+
+  .timeline {
+    margin-left: 0;
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    margin-top: 40px;
+    padding-left: 20px;
+    border-left: 2px solid var(--c-border);
+  }
+
+  .timeline__line {
+    display: none;
+  }
+
+  .timeline__entry,
+  .timeline__entry--active {
+    position: static;
+    width: auto;
+  }
+
+  .topics-section .card-grid {
+    margin-top: 32px;
+  }
+
+  .topics-section {
+    padding-bottom: 80px;
+  }
+}
