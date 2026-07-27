@@ -109,6 +109,7 @@
   background: rgba(0, 0, 0, 0);
 }
 
+/* both the thumbnail and this label open the YouTube channel */
 .hero__reel-label {
   position: absolute;
   left: 20.8%;
@@ -117,6 +118,13 @@
   font-size: clamp(10px, 1.11vw, 16px);
   font-weight: 700;
   text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-position: from-font;
+  transition: color 0.2s ease;
+}
+
+.hero__reel-label:hover {
+  color: var(--c-hover);
 }
 
 .hero__arrow {
