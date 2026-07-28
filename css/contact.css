@@ -36,11 +36,21 @@
 
 .contact-form {
   max-width: 620px;
+  /* pinned to the right edge of the container, opposite the lead text */
+  margin-left: auto;
   border: 1px solid var(--c-border);
   border-radius: 5px;
   padding: 40px;
   display: flex;
   flex-direction: column;
+}
+
+.contact-form__title {
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 28px;
 }
 
 /* spam trap — real people never see it, bots fill it in and get rejected */
