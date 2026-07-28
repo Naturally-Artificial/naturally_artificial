@@ -108,47 +108,67 @@
   --content-col: 263px;
 }
 
+/* Flow layout with the rule and dots drawn in CSS, so the number of roles
+   is not baked into anything — the old version pinned five entries by
+   percentage inside a fixed height, against a five-dot SVG. */
 .timeline {
   position: relative;
-  margin-top: 151px;
+  list-style: none;
+  margin-top: 120px;
   margin-left: 206px; /* 256 - container pad 50 */
-  width: 815px;
-  max-width: calc(100% - 206px);
-  height: 878px;
+  max-width: 660px;
+  padding-left: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 54px;
 }
 
-.timeline__line {
+.timeline::before {
+  content: "";
   position: absolute;
-  left: 0.86%;
-  top: 4.21%;
-  width: 3%;
-  height: 87%;
+  left: 8px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  background: var(--c-border);
 }
 
 .timeline__entry {
-  position: absolute;
-  left: 10.92%;
-  width: 44%;
+  position: relative;
   font-size: 20px;
   font-weight: 500;
 }
 
-.timeline__entry--active {
-  left: 6.75%;
-  right: -1.72%;
-  width: auto;
-  background: #f9f9f9;
-  border-radius: 5px;
-  padding: 24px 34px;
+.timeline__entry::before {
+  content: "";
+  position: absolute;
+  left: -48px;
+  top: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--c-white);
+  border: 2px solid var(--c-border);
 }
 
-.timeline__entry--dim {
-  opacity: 0.4;
+/* the current role sits on a card and takes the accent dot */
+.timeline__entry--active::before {
+  background: var(--c-hover);
+  border-color: var(--c-hover);
+}
+
+.timeline__entry--active::after {
+  content: "";
+  position: absolute;
+  inset: -22px -28px;
+  background: #f9f9f9;
+  border-radius: 5px;
+  z-index: -1;
 }
 
 .timeline__year {
   font-weight: 700;
-  letter-spacing: -0.06em;
+  letter-spacing: -0.03em;
 }
 
 .timeline__desc {
@@ -211,8 +231,11 @@
   }
 
   .timeline {
-    margin-left: 120px;
-    max-width: calc(100% - 120px);
+    margin-left: 0;
+    max-width: 100%;
+    margin-top: 40px;
+    padding-left: 38px;
+    gap: 40px;
   }
 }
 
@@ -256,24 +279,19 @@
   .timeline {
     margin-left: 0;
     max-width: 100%;
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
     margin-top: 40px;
-    padding-left: 20px;
-    border-left: 2px solid var(--c-border);
+    padding-left: 38px;
+    gap: 40px;
   }
 
-  .timeline__line {
-    display: none;
+  .timeline__entry::before {
+    left: -38px;
+    width: 14px;
+    height: 14px;
   }
 
-  .timeline__entry,
-  .timeline__entry--active {
-    position: static;
-    width: auto;
+  .timeline__entry--active::after {
+    inset: -16px -18px;
   }
 
   .topics-section .card-grid {
