@@ -46,34 +46,6 @@
   border-radius: 5px;
 }
 
-.about-bio__socials {
-  display: flex;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.about-bio__socials a {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 57px;
-  height: 48px;
-  border: 1px solid var(--c-border);
-  border-radius: 8px;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.about-bio__socials a:hover {
-  background: var(--c-black);
-  color: var(--c-white);
-}
-
-.about-bio__socials svg {
-  width: 22px;
-  height: 22px;
-  fill: currentColor;
-}
-
 .about-bio__col {
   display: flex;
   flex-direction: column;
