@@ -123,8 +123,10 @@
   transition: color 0.2s ease;
 }
 
+/* this label sits on the blue shape, so it darkens on hover — the usual blue
+   would be the colour it is standing on */
 .hero__reel-label:hover {
-  color: var(--c-hover);
+  color: var(--c-black);
 }
 
 .hero__arrow {
@@ -369,6 +371,11 @@
     width: auto;
     font-size: 12px;
     line-height: 1.3;
+  }
+
+  /* the band behind it is black here, not blue, so black would vanish */
+  .hero__reel-label:hover {
+    color: var(--c-hover);
   }
 
   .hero__arrow {
