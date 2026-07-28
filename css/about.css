@@ -74,6 +74,7 @@
 
 .timeline-section {
   margin-top: 150px;
+  padding-bottom: 160px;
 }
 
 .timeline-section .section-head {
@@ -153,25 +154,6 @@
   color: var(--c-black);
 }
 
-/* ---------- (02) Topics ---------- */
-
-.topics-section {
-  margin-top: 164px;
-  padding-bottom: 159px;
-}
-
-.topics-section .section-head {
-  --content-col: 282px;
-}
-
-.topics-section .card-grid {
-  margin-top: 80px;
-}
-
-.topics-section .wid-card__title {
-  max-width: 320px;
-}
-
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1024px) {
@@ -197,17 +179,14 @@
     font-size: 34px;
   }
 
-  .timeline-section,
-  .topics-section {
+  .timeline-section {
     margin-top: 100px;
+    padding-bottom: 100px;
   }
 
   .timeline {
-    margin-left: 0;
-    max-width: 100%;
-    margin-top: 40px;
-    padding-left: 38px;
-    gap: 40px;
+    margin-left: 120px;
+    margin-top: 90px;
   }
 }
 
@@ -243,9 +222,9 @@
     line-height: 26px;
   }
 
-  .timeline-section,
-  .topics-section {
+  .timeline-section {
     margin-top: 72px;
+    padding-bottom: 80px;
   }
 
   .timeline {
@@ -266,11 +245,4 @@
     inset: -16px -18px;
   }
 
-  .topics-section .card-grid {
-    margin-top: 32px;
-  }
-
-  .topics-section {
-    padding-bottom: 80px;
-  }
 }
