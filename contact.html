@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contact — Sergey Osipov</title>
-  <meta name="description" content="Contact Sergey Osipov — apply as a guest for Naturally Artificial, send a speaking invitation, or reach out about business and partnerships.">
+  <meta name="description" content="Contact Sergey Osipov — suggest a guest for Naturally Artificial, send a pitch deck, an event invitation or a partnership offer.">
   <link rel="icon" href="assets/favicon/favicon.ico" sizes="32x32">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32.png">
@@ -14,8 +14,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=11">
-  <link rel="stylesheet" href="css/contact.css?v=11">
+  <link rel="stylesheet" href="css/styles.css?v=18">
+  <link rel="stylesheet" href="css/contact.css?v=18">
 </head>
 <body id="top" class="contact-page">
 
@@ -43,98 +43,34 @@
 
     <section class="contact-lead container">
       <p class="contact-lead__label">Contact</p>
-      <p class="contact-lead__text">Pick the form that fits — Sergey reads every message and replies within 48 hours</p>
+      <p class="contact-lead__text">Got a great guest to suggest, a pitch deck, an event or an offer? Write in.</p>
     </section>
 
-    <!-- ================= Forms ================= -->
+    <!-- ================= Form ================= -->
     <section class="contact-forms container">
-
-      <article class="contact-form" id="guest">
-        <p class="contact-form__num">01</p>
-        <h2 class="contact-form__title">Apply as a guest</h2>
-        <p class="contact-form__sub">Founders building something real in the AI era — suggest yourself for Naturally Artificial.</p>
-        <form name="guest" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
-          <input type="hidden" name="form-name" value="guest">
+      <article class="contact-form">
+        <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+          <input type="hidden" name="form-name" value="contact">
           <p class="hp-field"><label>Leave this empty: <input name="bot-field"></label></p>
           <div>
-            <label for="guest-name">Name</label>
-            <input type="text" id="guest-name" name="name" required autocomplete="name">
+            <label for="contact-name">Name</label>
+            <input type="text" id="contact-name" name="name" required autocomplete="name">
           </div>
           <div>
-            <label for="guest-email">Email</label>
-            <input type="email" id="guest-email" name="email" placeholder="Alexsmith@gmail.com" required autocomplete="email">
+            <label for="contact-email">Email</label>
+            <input type="email" id="contact-email" name="email" required autocomplete="email">
             <p class="contact-form__error">Please enter a valid email address.</p>
           </div>
           <div>
-            <label for="guest-company">Company / project</label>
-            <input type="text" id="guest-company" name="company" autocomplete="organization">
+            <label for="contact-company">Company <span class="contact-form__optional">optional</span></label>
+            <input type="text" id="contact-company" name="company" autocomplete="organization">
           </div>
           <div>
-            <label for="guest-message">What are you building?</label>
-            <textarea id="guest-message" name="message" required></textarea>
+            <label for="contact-message">Message</label>
+            <textarea id="contact-message" name="message" required></textarea>
           </div>
           <p class="contact-form__error contact-form__error--general">Please fill in the required fields.</p>
-          <p class="contact-form__success">Message sent — Sergey replies within 48 hours.</p>
-          <button type="submit">Apply as a guest</button>
-        </form>
-      </article>
-
-      <article class="contact-form" id="speaking">
-        <p class="contact-form__num">02</p>
-        <h2 class="contact-form__title">Speaking invitation</h2>
-        <p class="contact-form__sub">Keynotes, panels, fireside chats and podcasts. Share the event details.</p>
-        <form name="speaking" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
-          <input type="hidden" name="form-name" value="speaking">
-          <p class="hp-field"><label>Leave this empty: <input name="bot-field"></label></p>
-          <div>
-            <label for="speak-name">Name</label>
-            <input type="text" id="speak-name" name="name" required autocomplete="name">
-          </div>
-          <div>
-            <label for="speak-email">Email</label>
-            <input type="email" id="speak-email" name="email" placeholder="Alexsmith@gmail.com" required autocomplete="email">
-            <p class="contact-form__error">Please enter a valid email address.</p>
-          </div>
-          <div>
-            <label for="speak-event">Event, date &amp; location</label>
-            <input type="text" id="speak-event" name="event" required>
-          </div>
-          <div>
-            <label for="speak-message">Format &amp; topic</label>
-            <textarea id="speak-message" name="message" required></textarea>
-          </div>
-          <p class="contact-form__error contact-form__error--general">Please fill in the required fields.</p>
-          <p class="contact-form__success">Message sent — Sergey replies within 48 hours.</p>
-          <button type="submit">Send invitation</button>
-        </form>
-      </article>
-
-      <article class="contact-form" id="partnerships">
-        <p class="contact-form__num">03</p>
-        <h2 class="contact-form__title">Business &amp; partnerships</h2>
-        <p class="contact-form__sub">Pitch your project, propose an investment or partnership opportunity.</p>
-        <form name="partnerships" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
-          <input type="hidden" name="form-name" value="partnerships">
-          <p class="hp-field"><label>Leave this empty: <input name="bot-field"></label></p>
-          <div>
-            <label for="biz-name">Name</label>
-            <input type="text" id="biz-name" name="name" required autocomplete="name">
-          </div>
-          <div>
-            <label for="biz-email">Email</label>
-            <input type="email" id="biz-email" name="email" placeholder="Alexsmith@gmail.com" required autocomplete="email">
-            <p class="contact-form__error">Please enter a valid email address.</p>
-          </div>
-          <div>
-            <label for="biz-company">Company</label>
-            <input type="text" id="biz-company" name="company" autocomplete="organization">
-          </div>
-          <div>
-            <label for="biz-message">Your proposal</label>
-            <textarea id="biz-message" name="message" required></textarea>
-          </div>
-          <p class="contact-form__error contact-form__error--general">Please fill in the required fields.</p>
-          <p class="contact-form__success">Message sent — Sergey replies within 48 hours.</p>
+          <p class="contact-form__success">Message sent — thank you, Sergey will be in touch.</p>
           <button type="submit">Get in touch</button>
         </form>
       </article>
@@ -192,6 +128,6 @@
     </div>
   </footer>
 
-  <script src="js/main.js?v=11"></script>
+  <script src="js/main.js?v=18"></script>
 </body>
 </html>
