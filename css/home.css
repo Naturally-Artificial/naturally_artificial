@@ -85,19 +85,69 @@
   position: absolute;
   left: 3.47%;
   top: 74.4%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
   white-space: nowrap;
   font-size: clamp(10px, 1.11vw, 16px);
   font-weight: 700;
   text-transform: uppercase;
-  text-decoration: underline;
-  text-underline-position: from-font;
-  transition: color 0.2s ease;
+  /* the underline is drawn by hand below so it can be animated on its own */
+  text-decoration: none;
 }
 
-/* it stands on the black part of the hero now that it has moved left, so it
-   takes the usual blue on hover — black here would make it disappear */
-.hero__reel-label:hover {
-  color: var(--c-hover);
+/* sized in em so it tracks the clamped label, and filled with currentColor
+   so it stays whatever colour the link is */
+.hero__reel-play {
+  flex: none;
+  width: 0.75em;
+  height: 0.875em;
+}
+
+.hero__reel-text {
+  position: relative;
+}
+
+.hero__reel-text::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.18em;
+  height: 1px;
+  background: currentColor;
+}
+
+/* the colour stays white on hover — the underline redrawing itself is the
+   whole of the feedback, so it sweeps out to the right and back in from
+   the left rather than simply fading */
+.hero__reel-label:hover .hero__reel-text::after {
+  animation: underline-redraw 0.55s ease;
+}
+
+@keyframes underline-redraw {
+  0% {
+    transform: scaleX(1);
+    transform-origin: right;
+  }
+  45% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+  46% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  100% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__reel-label:hover .hero__reel-text::after {
+    animation: none;
+  }
 }
 
 .hero__arrow {
