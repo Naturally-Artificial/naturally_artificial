@@ -9,10 +9,13 @@
 # Publishing the repo root means the build script is served alongside the
 # pages. It holds no secrets, but it isn't part of the site and shouldn't be
 # downloadable or indexable.
+# force is required: without it a rule that collides with a real published
+# file is ignored, and build.py is a real published file.
 [[redirects]]
   from = "/build.py"
   to = "/404.html"
   status = 404
+  force = true
 
 [[headers]]
   for = "/assets/*"
