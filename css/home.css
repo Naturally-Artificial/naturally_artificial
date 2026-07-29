@@ -351,13 +351,19 @@
     }
   }
 
-  /* the one shape that stays outside the stage — at the desktop scale it would
+  /* The one shape that stays outside the stage — at the desktop scale it would
      sit off the left edge, and it is decoration for the type, not for the
-     portrait */
+     portrait.
+
+     It must stay flush with the top-left corner. The Figma export is clipped
+     to the 1440x700 desktop frame, so the artwork is cut off along the SVG's
+     own top and left edges; on desktop those cuts land on the hero's corner
+     and are invisible. Pushed inwards — it was at top 6% — the top cut becomes
+     a straight line across the blue. */
   .hero__shape--top {
     width: 36%;
     left: -8%;
-    top: 6%;
+    top: 0;
   }
 
   .hero__title {
