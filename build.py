@@ -53,6 +53,7 @@ PAGE_PATHS = {
     "telegram.html": "/telegram",
     "speaking.html": "/speaking",
     "contact.html": "/contact",
+    "presskit.html": "/presskit",
     "privacy.html": "/privacy",
     "terms.html": "/terms",
 }
@@ -236,6 +237,11 @@ def parse_feed(xml_text):
                 "thumb": best_thumb(vid),
                 "summary": summarize(description),
                 "views": human_count(views),
+                # the raw count and the owning channel, for the press kit:
+                # playlists can hold other people's videos, and those are
+                # Sergey's guest appearances, not episodes of the show.
+                "views_n": int(views) if views.isdigit() else 0,
+                "channel": e.findtext("yt:channelId", "", NS),
                 "date": dt,
             }
         )
@@ -260,9 +266,9 @@ def fetch_youtube():
             videos.extend(fresh)
             print(f"  playlist {pid}: +{len(fresh)}")
 
-    videos = [v for v in videos if v["date"] >= YT_MIN_DATE]
     videos.sort(key=lambda v: v["date"], reverse=True)
-    return videos
+    recent = [v for v in videos if v["date"] >= YT_MIN_DATE]
+    return recent, videos
 
 
 def render_episode(v, with_summary=True):
@@ -441,6 +447,92 @@ def render_post(p, index):
           {body}
           <footer class="tg-post__foot">{stamp}{views}<a class="tg-post__link" href="{p['url']}" target="_blank" rel="noopener">Open in Telegram</a></footer>
         </article>"""
+
+
+# --------------------------------------------------------------------------
+# press kit numbers
+# --------------------------------------------------------------------------
+
+TG_ABOUT = f"https://t.me/{TG_CHANNEL}"
+
+
+def telegram_subscribers():
+    try:
+        page = get(TG_ABOUT, timeout=12)
+    except (urllib.error.URLError, TimeoutError):
+        return ""
+    m = re.search(r'tgme_page_extra">([\d\s ,\.]+?)\s*subscribers?<', page)
+    return re.sub(r"[\s ]", ",", m.group(1).strip()) if m else ""
+
+
+def show_stats(videos):
+    """What the show itself does, as opposed to what the channel does.
+
+    Only the channel's own long-form videos count here. The median leads
+    because two outliers pull the mean far above a typical episode, and a
+    sponsor who is quoted the mean finds that out on their first report.
+    """
+    own = [v for v in videos if v["channel"] == YT_CHANNEL_ID and v["views_n"]]
+    if not own:
+        return {}
+    counts = sorted(v["views_n"] for v in own)
+    mid = len(counts) // 2
+    median = counts[mid] if len(counts) % 2 else (counts[mid - 1] + counts[mid]) // 2
+
+    # Cadence over the current run, not over the channel's whole life: the
+    # early months were sporadic, and averaging them in reports a slower show
+    # than the one a partner would actually be joining.
+    current = [v for v in own if v["date"] >= YT_MIN_DATE] or own
+    span_days = (max(v["date"] for v in current) - min(v["date"] for v in current)).days
+    per_month = len(current) / (span_days / 30.44) if span_days > 30 else len(current)
+    return {
+        "episodes": len(own),
+        "views": f"{sum(counts):,}",
+        "median": f"{median:,}",
+        "mean": f"{sum(counts) // len(counts):,}",
+        "per_month": f"{per_month:.1f}".rstrip("0").rstrip("."),
+    }
+
+
+def render_stats(videos):
+    show = show_stats(videos)
+    tg = telegram_subscribers()
+    if not show:
+        return ""
+
+    # Deliberately not the channel's subscriber count. Almost all of it was
+    # bought through ad campaigns and it churns; quoting it to a sponsor would
+    # be quoting a number that falls apart on their first report. What is left
+    # here is what the show genuinely does.
+    # The cadence is stated, not measured: it is the rhythm the show commits
+    # to, and a rolling average would swing with every gap and double week.
+    cards = [
+        (str(show["episodes"]), "long-form episodes"),
+        (show["median"], "views per episode, median"),
+        ("1–2", "new episodes a month"),
+    ]
+    if tg:
+        cards.append((tg, "Telegram subscribers"))
+
+    out = [
+        '        <div class="pk-stats">',
+    ]
+    for value, label in cards:
+        out.append('          <div class="pk-stat">')
+        out.append(f'            <p class="pk-stat__num">{html.escape(value)}</p>')
+        out.append(f'            <p class="pk-stat__label">{html.escape(label)}</p>')
+        out.append("          </div>")
+    out.append("        </div>")
+    out.append(
+        '        <p class="pk-note">These describe the interview show itself, '
+        "not the channel around it: the channel also runs Shorts, which reach "
+        "far more people and tell you nothing about who sits through an hour "
+        "of conversation. Mean views per episode are "
+        f'{html.escape(show["mean"])} — a couple of outliers pull it well above '
+        "a typical episode, which is why the median leads. Roughly a third of "
+        "all watch time comes from viewers who came back for another episode.</p>"
+    )
+    return "\n".join(out)
 
 
 # --------------------------------------------------------------------------
@@ -654,7 +746,7 @@ def main():
     build_seo()
 
     print("YouTube…")
-    videos = fetch_youtube()
+    videos, all_videos = fetch_youtube()
     print(f"  {len(videos)} videos")
 
     print("Telegram…")
@@ -675,6 +767,14 @@ def main():
             "episodes",
             "\n".join(render_episode(v) for v in videos),
         )
+
+    if all_videos:
+        print("Press kit numbers…")
+        stats = render_stats(all_videos)
+        if stats:
+            inject("presskit.html", "stats", stats)
+        else:
+            print("  incomplete — keeping the committed numbers")
 
     if posts and tg_complete:
         inject(
