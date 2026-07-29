@@ -84,10 +84,14 @@
 .hero__reel-label {
   position: absolute;
   left: 3.47%;
-  /* anchored by its foot, not its top, so the text sits on the same line as
-     the bottom of "ARTIFICIAL" across the hero — that line lands at 96% of
-     the hero's height at every width */
-  bottom: 3.97%;
+  /* the label's baseline is meant to sit on the baseline of "ARTIFICIAL",
+     which lands at 92.75% of the hero's height at every width — hence the
+     7.25% from the foot. The heading's line-height of 0.853 means its line
+     box bottom is nowhere near its baseline, so aligning the boxes leaves
+     the label visibly low; subtracting the label's own descender depth
+     (~0.75em, and em because the label's size is clamped while the heading
+     scales with vw) puts the two baselines on the same line instead. */
+  bottom: calc(7.25% - 0.75em);
   display: inline-flex;
   align-items: center;
   gap: 0.55em;
