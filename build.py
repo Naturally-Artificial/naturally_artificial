@@ -16,6 +16,7 @@ Everything outside the markers is hand-written and never touched.
 import html
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -23,6 +24,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).parent
+
+# A deploy must never hang on a slow feed. Netlify kills a build that runs
+# past its limit, and a killed build leaves the previous deploy live — so
+# fetching is time-boxed and whatever isn't ready keeps its committed
+# version instead.
+BUDGET_SECONDS = 100
+STARTED = time.monotonic()
+
+
+def out_of_time():
+    return time.monotonic() - STARTED > BUDGET_SECONDS
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
@@ -60,13 +72,13 @@ NS = {
 # --------------------------------------------------------------------------
 
 
-def get(url, timeout=25):
+def get(url, timeout=12):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read().decode("utf-8", "replace")
 
 
-def head_ok(url, timeout=10):
+def head_ok(url, timeout=8):
     req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": UA})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -338,13 +350,22 @@ def parse_posts(page_html):
 
 
 def fetch_telegram(limit=TG_MAX_POSTS):
+    """Returns (posts, complete). complete is False when the walk was cut
+    short, in which case the caller must not overwrite the committed feed
+    with a shorter one."""
     seen, collected, before = set(), [], None
+    complete = True
     while len(collected) < limit:
+        if out_of_time():
+            print(f"  telegram: out of time at {len(collected)} posts")
+            complete = False
+            break
         url = TG_WEB if before is None else f"{TG_WEB}?before={before}"
         try:
             page = get(url)
-        except (urllib.error.URLError, TimeoutError) as exc:
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
             print(f"  telegram: stopped at {len(collected)} posts ({exc})")
+            complete = False
             break
 
         batch = [p for p in parse_posts(page) if p["id"] not in seen]
@@ -363,7 +384,7 @@ def fetch_telegram(limit=TG_MAX_POSTS):
             break
 
     collected.sort(key=lambda p: p["id"], reverse=True)
-    return collected[:limit]
+    return collected[:limit], complete
 
 
 def render_post(p, index):
@@ -422,8 +443,8 @@ def main():
     print(f"  {len(videos)} videos")
 
     print("Telegram…")
-    posts = fetch_telegram()
-    print(f"  {len(posts)} posts")
+    posts, tg_complete = fetch_telegram()
+    print(f"  {len(posts)} posts{'' if tg_complete else ' (incomplete — keeping the committed feed)'}")
 
     if not videos and not posts:
         sys.exit("nothing fetched — leaving pages untouched")
@@ -440,7 +461,7 @@ def main():
             "\n".join(render_episode(v) for v in videos),
         )
 
-    if posts:
+    if posts and tg_complete:
         inject(
             "telegram.html",
             "posts",
