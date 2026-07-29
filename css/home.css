@@ -29,6 +29,13 @@
   pointer-events: none;
 }
 
+/* on desktop the stage is simply the hero box, so every percentage inside it
+   resolves exactly as it did before the wrapper existed */
+.hero__stage {
+  position: absolute;
+  inset: 0;
+}
+
 /* baked SVG exports from Figma — positions are the visible bounding
    boxes inside the 1440x700 hero frame */
 .hero__shape--top {
@@ -316,24 +323,41 @@
     flex-direction: column;
   }
 
-  /* same arrangement as the desktop frame — a tall shape down the left near
-     the top, the big blob across the middle, one more at the bottom right */
+  /* The bottom of the composition is the desktop frame, not a rebuild of it:
+     the stage keeps the 1440x700 proportions, sits on the hero's foot, and is
+     blown up to 2.2x the viewport so the portrait reads at a usable size. The
+     sides fall off the screen, which is the whole point — everything inside
+     keeps its desktop percentages, so the portrait's crop at the bottom edge
+     and the two shapes behind it land exactly where they do on desktop.
+     -68.36vw is what centres the portrait: it sits at 53.8% across the frame,
+     and 50vw - 0.538 x 220vw is where that has to start. */
+  .hero__stage {
+    --stage-w: 220vw;
+    inset: auto;
+    /* the portrait sits 53.8% across the frame; this is where the frame has
+       to start for that point to land in the middle of the screen. Derived
+       from --stage-w so the two can't fall out of step. */
+    left: calc(50vw - 0.538 * var(--stage-w));
+    bottom: 0;
+    width: var(--stage-w);
+    aspect-ratio: 1440 / 700;
+  }
+
+  /* on a short screen the frame would climb into the headings, so it is scaled
+     back rather than allowed to collide */
+  @media (max-height: 720px) {
+    .hero__stage {
+      --stage-w: 170vw;
+    }
+  }
+
+  /* the one shape that stays outside the stage — at the desktop scale it would
+     sit off the left edge, and it is decoration for the type, not for the
+     portrait */
   .hero__shape--top {
     width: 36%;
     left: -8%;
     top: 6%;
-  }
-
-  .hero__shape--left {
-    width: 104%;
-    left: -18%;
-    top: 32%;
-  }
-
-  .hero__shape--right {
-    width: 82%;
-    left: 40%;
-    top: 70%;
   }
 
   .hero__title {
@@ -356,23 +380,6 @@
     order: 1;
     margin-top: 14px;
     text-align: right;
-  }
-
-  .hero__portrait {
-    position: relative;
-    left: auto;
-    top: auto;
-    order: 2;
-    /* basis 0 so the portrait takes exactly the space the type leaves over;
-       margin-top:auto plus object-position:bottom pin it to the hero's edge */
-    flex: 1 1 0;
-    min-height: 0;
-    margin-top: auto;
-    width: 92%;
-    object-fit: contain;
-    object-position: center bottom;
-    align-self: center;
-    transform: rotate(-3.24deg);
   }
 
   /* its own band under the hero, on the same black */
