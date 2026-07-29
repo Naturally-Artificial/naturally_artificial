@@ -14,7 +14,9 @@ Everything outside the markers is hand-written and never touched.
 """
 
 import html
+import json
 import re
+import subprocess
 import sys
 import time
 import urllib.error
@@ -35,6 +37,31 @@ STARTED = time.monotonic()
 
 def out_of_time():
     return time.monotonic() - STARTED > BUDGET_SECONDS
+
+# The site's own address. Change this one line when a custom domain lands —
+# the canonical links, the social cards, robots.txt and the sitemap are all
+# regenerated from it. No trailing slash.
+SITE_URL = "https://naturallyartif.netlify.app"
+
+# Netlify serves these without the .html, and that extensionless form is the
+# one that must appear in canonical links and the sitemap; otherwise search
+# engines index both spellings of every page.
+PAGE_PATHS = {
+    "index.html": "/",
+    "about.html": "/about",
+    "show.html": "/show",
+    "telegram.html": "/telegram",
+    "speaking.html": "/speaking",
+    "contact.html": "/contact",
+    "privacy.html": "/privacy",
+    "terms.html": "/terms",
+}
+
+# Legal pages belong in the sitemap but shouldn't compete with the real
+# content, so they carry a lower priority.
+LOW_PRIORITY = {"privacy.html", "terms.html"}
+
+OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
@@ -417,8 +444,191 @@ def render_post(p, index):
 
 
 # --------------------------------------------------------------------------
+# search engines and social cards
+# --------------------------------------------------------------------------
+
+OG_ALT = "Naturally Artificial — founder-to-founder talks in the AI era"
+
+SOCIAL = [
+    YT_HANDLE,
+    "https://t.me/naturally_artificial",
+    "https://open.spotify.com/show/033U1gDnjee2ValRcN3vWX",
+    "https://www.linkedin.com/in/osipov/",
+    "https://www.linkedin.com/company/naturally-artificial/",
+    "https://www.instagram.com/naturally__artificial/",
+]
+
+
+def page_meta(path):
+    """The title and description the page already carries in its head.
+
+    Reading them back rather than keeping a second copy here means the two
+    can never drift apart.
+    """
+    src = (ROOT / path).read_text(encoding="utf-8")
+    title = re.search(r"<title>(.*?)</title>", src, re.S)
+    desc = re.search(r'<meta name="description" content="(.*?)">', src, re.S)
+    if not title or not desc:
+        sys.exit(f"{path}: no <title> or no description to build the social card from")
+    return html.unescape(title.group(1).strip()), html.unescape(desc.group(1).strip())
+
+
+def structured_data(path, title, desc):
+    """schema.org JSON-LD, only where there is something real to describe."""
+    if path == "index.html":
+        return {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "WebSite",
+                    "@id": f"{SITE_URL}/#website",
+                    "url": f"{SITE_URL}/",
+                    "name": "Naturally Artificial",
+                    "inLanguage": "en",
+                    "publisher": {"@id": f"{SITE_URL}/#person"},
+                },
+                {
+                    "@type": "Person",
+                    "@id": f"{SITE_URL}/#person",
+                    "name": "Sergey Osipov",
+                    "url": f"{SITE_URL}/",
+                    "jobTitle": "Founder and early-stage investor",
+                    "description": desc,
+                    "image": f"{SITE_URL}{OG_IMAGE}",
+                    "sameAs": SOCIAL,
+                },
+            ],
+        }
+    if path == "show.html":
+        return {
+            "@context": "https://schema.org",
+            "@type": "PodcastSeries",
+            "@id": f"{SITE_URL}/show#podcast",
+            "name": "Naturally Artificial",
+            "url": f"{SITE_URL}/show",
+            "description": desc,
+            "inLanguage": "en",
+            "image": f"{SITE_URL}{OG_IMAGE}",
+            "webFeed": YT_FEED,
+            "author": {"@type": "Person", "name": "Sergey Osipov"},
+        }
+    return None
+
+
+def seo_block(path):
+    title, desc = page_meta(path)
+    url = SITE_URL + PAGE_PATHS[path]
+    t, d = html.escape(title, quote=True), html.escape(desc, quote=True)
+
+    tags = [
+        f'<link rel="canonical" href="{url}">',
+        '<meta name="robots" content="index, follow, max-image-preview:large">',
+        '<meta property="og:type" content="website">',
+        '<meta property="og:site_name" content="Naturally Artificial">',
+        '<meta property="og:locale" content="en_US">',
+        f'<meta property="og:url" content="{url}">',
+        f'<meta property="og:title" content="{t}">',
+        f'<meta property="og:description" content="{d}">',
+        f'<meta property="og:image" content="{SITE_URL}{OG_IMAGE}">',
+        '<meta property="og:image:width" content="1200">',
+        '<meta property="og:image:height" content="630">',
+        f'<meta property="og:image:alt" content="{OG_ALT}">',
+        '<meta name="twitter:card" content="summary_large_image">',
+        f'<meta name="twitter:title" content="{t}">',
+        f'<meta name="twitter:description" content="{d}">',
+        f'<meta name="twitter:image" content="{SITE_URL}{OG_IMAGE}">',
+    ]
+
+    data = structured_data(path, title, desc)
+    if data:
+        tags.append(
+            '<script type="application/ld+json">'
+            + json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+            + "</script>"
+        )
+    return "\n".join("  " + tag for tag in tags)
+
+
+def git_dates():
+    """Last commit date per page, when the checkout can actually tell us.
+
+    Netlify clones shallow, and there every file looks as though it changed in
+    the one commit that exists — a sitemap claiming every page changed today,
+    on every single deploy, is worse than one with no dates at all. So when the
+    clone is shallow we say nothing.
+    """
+    try:
+        probe = subprocess.run(
+            ["git", "rev-parse", "--is-shallow-repository"],
+            cwd=ROOT, capture_output=True, text=True, timeout=10,
+        )
+        if probe.returncode != 0 or probe.stdout.strip() != "false":
+            return {}
+        dates = {}
+        for page in PAGE_PATHS:
+            r = subprocess.run(
+                ["git", "log", "-1", "--format=%cs", "--", page],
+                cwd=ROOT, capture_output=True, text=True, timeout=10,
+            )
+            if r.returncode == 0 and r.stdout.strip():
+                dates[page] = r.stdout.strip()
+        return dates
+    except (OSError, subprocess.SubprocessError):
+        return {}
+
+
+def build_search_files():
+    (ROOT / "robots.txt").write_text(
+        "# Everything here is meant to be found.\n"
+        "User-agent: *\n"
+        "Allow: /\n"
+        "\n"
+        f"Sitemap: {SITE_URL}/sitemap.xml\n",
+        encoding="utf-8",
+    )
+    print("  wrote robots.txt")
+
+    dates = git_dates()
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+    for page, path in PAGE_PATHS.items():
+        lines.append("  <url>")
+        lines.append(f"    <loc>{SITE_URL}{path}</loc>")
+        if page in dates:
+            lines.append(f"    <lastmod>{dates[page]}</lastmod>")
+        priority = "1.0" if page == "index.html" else "0.3" if page in LOW_PRIORITY else "0.8"
+        lines.append(f"    <priority>{priority}</priority>")
+        lines.append("  </url>")
+    lines.append("</urlset>")
+    (ROOT / "sitemap.xml").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"  wrote sitemap.xml ({len(PAGE_PATHS)} urls"
+          f"{'' if dates else ', no dates — shallow clone'})")
+
+
+def build_seo():
+    for page in PAGE_PATHS:
+        inject_between(page, "SEO", seo_block(page), indent="  ")
+    build_search_files()
+
+
+# --------------------------------------------------------------------------
 # writing
 # --------------------------------------------------------------------------
+
+
+def inject_between(path, marker, content, indent=""):
+    f = ROOT / path
+    src = f.read_text(encoding="utf-8")
+    start, end = f"<!-- {marker}:start -->", f"<!-- {marker}:end -->"
+    pattern = re.compile(re.escape(start) + r".*?" + re.escape(end), re.S)
+    if not pattern.search(src):
+        sys.exit(f"marker {marker} not found in {path}")
+    f.write_text(
+        pattern.sub(lambda _: f"{start}\n{content}\n{indent}{end}", src),
+        encoding="utf-8",
+    )
 
 
 def inject(path, name, content):
@@ -438,6 +648,11 @@ def inject(path, name, content):
 
 
 def main():
+    # First, because it needs no network: a feed outage must not cost the
+    # site its canonical links or its sitemap.
+    print("Search metadata…")
+    build_seo()
+
     print("YouTube…")
     videos = fetch_youtube()
     print(f"  {len(videos)} videos")

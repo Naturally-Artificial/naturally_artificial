@@ -142,3 +142,18 @@
 .legal-inline-btn:hover {
   color: var(--c-black);
 }
+
+/* the way-out list on the 404 page */
+.notfound-links {
+  margin-top: 22px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.notfound-links li {
+  margin-top: 12px;
+}
+
+.notfound-links a {
+  font-size: 20px;
+}
