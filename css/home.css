@@ -84,7 +84,10 @@
 .hero__reel-label {
   position: absolute;
   left: 3.47%;
-  top: 74.4%;
+  /* anchored by its foot, not its top, so the text sits on the same line as
+     the bottom of "ARTIFICIAL" across the hero — that line lands at 96% of
+     the hero's height at every width */
+  bottom: 3.97%;
   display: inline-flex;
   align-items: center;
   gap: 0.55em;
@@ -104,16 +107,13 @@
   height: 0.875em;
 }
 
-.hero__reel-text {
-  position: relative;
-}
-
-.hero__reel-text::after {
+/* runs the full width of the link, under the icon as well as the words */
+.hero__reel-label::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -0.18em;
+  bottom: -0.35em;
   height: 1px;
   background: currentColor;
 }
@@ -121,7 +121,7 @@
 /* the colour stays white on hover — the underline redrawing itself is the
    whole of the feedback, so it sweeps out to the right and back in from
    the left rather than simply fading */
-.hero__reel-label:hover .hero__reel-text::after {
+.hero__reel-label:hover::after {
   animation: underline-redraw 0.55s ease;
 }
 
@@ -145,7 +145,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero__reel-label:hover .hero__reel-text::after {
+  .hero__reel-label:hover::after {
     animation: none;
   }
 }
