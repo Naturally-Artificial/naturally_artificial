@@ -508,7 +508,7 @@ def render_stats(videos):
     # to, and a rolling average would swing with every gap and double week.
     cards = [
         (str(show["episodes"]), "long-form episodes"),
-        (show["median"], "views per episode, median"),
+        (show["mean"], "mean views per episode"),
         ("1–2", "new episodes a month"),
     ]
     if tg:
@@ -524,13 +524,8 @@ def render_stats(videos):
         out.append("          </div>")
     out.append("        </div>")
     out.append(
-        '        <p class="pk-note">These describe the interview show itself, '
-        "not the channel around it: the channel also runs Shorts, which reach "
-        "far more people and tell you nothing about who sits through an hour "
-        "of conversation. Mean views per episode are "
-        f'{html.escape(show["mean"])} — a couple of outliers pull it well above '
-        "a typical episode, which is why the median leads. Roughly a third of "
-        "all watch time comes from viewers who came back for another episode.</p>"
+        '        <p class="pk-note">The channel only started running properly '
+        "in January 2025, so these are the numbers from its first months.</p>"
     )
     return "\n".join(out)
 
