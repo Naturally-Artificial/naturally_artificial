@@ -1,3 +1,93 @@
+// ---------------------------------------------------------------------------
+// Cookie consent. Analytics loads only after the visitor accepts — nothing is
+// requested from Google before that, and declining leaves the site with no
+// cookies at all. The choice itself lives in localStorage rather than a cookie,
+// so storing it doesn't require the very consent it records.
+// ---------------------------------------------------------------------------
+
+// Put the Google Analytics Measurement ID here (looks like "G-XXXXXXXXXX").
+// While it is empty the banner still works and nothing is ever loaded.
+const ANALYTICS_ID = "";
+
+const CONSENT_KEY = "na-cookie-consent";
+
+const readConsent = () => {
+  try {
+    return localStorage.getItem(CONSENT_KEY);
+  } catch {
+    return null; // private mode, or storage blocked
+  }
+};
+
+const saveConsent = (value) => {
+  try {
+    localStorage.setItem(CONSENT_KEY, value);
+  } catch {
+    /* nothing we can do — the visitor simply gets asked again */
+  }
+};
+
+function loadAnalytics() {
+  if (!ANALYTICS_ID || window.__analyticsLoaded) return;
+  window.__analyticsLoaded = true;
+
+  const tag = document.createElement("script");
+  tag.async = true;
+  tag.src = `https://www.googletagmanager.com/gtag/js?id=${ANALYTICS_ID}`;
+  document.head.appendChild(tag);
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { window.dataLayer.push(arguments); }
+  window.gtag = gtag;
+  gtag("js", new Date());
+  // no cookie is used to single out a visitor across sites
+  gtag("config", ANALYTICS_ID, { anonymize_ip: true });
+}
+
+function showConsentBanner() {
+  if (document.querySelector(".consent")) return;
+
+  const bar = document.createElement("div");
+  bar.className = "consent";
+  bar.setAttribute("role", "dialog");
+  bar.setAttribute("aria-label", "Cookies");
+  bar.innerHTML = `
+    <p class="consent__text">We'd like to count visits to see which pages people actually read. That's all analytics cookies are used for here — nothing personal, nothing sold. <a href="privacy.html">How we handle data</a></p>
+    <div class="consent__actions">
+      <button class="consent__btn consent__btn--ghost" type="button" data-consent="denied">Decline</button>
+      <button class="consent__btn" type="button" data-consent="granted">Accept</button>
+    </div>`;
+
+  bar.querySelectorAll("[data-consent]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const choice = btn.dataset.consent;
+      saveConsent(choice);
+      bar.remove();
+      if (choice === "granted") loadAnalytics();
+    });
+  });
+
+  document.body.appendChild(bar);
+}
+
+const consent = readConsent();
+if (consent === "granted") {
+  loadAnalytics();
+} else if (consent !== "denied") {
+  showConsentBanner();
+}
+
+// lets the privacy page offer a way to change the answer
+const consentReset = document.getElementById("consent-reset");
+if (consentReset) {
+  consentReset.addEventListener("click", () => {
+    try {
+      localStorage.removeItem(CONSENT_KEY);
+    } catch { /* ignore */ }
+    showConsentBanner();
+  });
+}
+
 // Contact forms: validate here, then hand the values to Netlify Forms.
 // Netlify accepts a url-encoded POST to the site root as long as the body
 // carries the form-name field; submitting over fetch keeps the visitor on the

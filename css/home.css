@@ -249,6 +249,17 @@
 
 @media (max-width: 1024px) {
 
+  /* the label and the index number claim their width first; the video takes
+     what is left. Otherwise its fixed 640px plus those two pushes the page
+     wider than the viewport and the whole page scrolls sideways. */
+  .reel-section {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .reel-section__video {
+    justify-self: center;
+  }
+
   .about-intro__text {
     font-size: 32px;
     text-indent: 64px;
