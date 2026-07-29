@@ -349,6 +349,13 @@ a.wid-card:hover .wid-card__cat {
   padding-top: 13px;
 }
 
+/* the commas belong to the horizontal row, not to the page names — drawn
+   here rather than typed into the markup so the mobile menu, which stacks
+   the items into a list, can simply not have them */
+.site-header__nav a:not(:last-child)::after {
+  content: ",";
+}
+
 .site-header__nav a:hover,
 .site-header__contact:hover {
   opacity: 0.7;
@@ -602,6 +609,13 @@ body.nav-open .nav-toggle span::after {
     gap: 24px;
     font-size: 32px;
     z-index: 25;
+  }
+
+  /* stacked, so nothing needs separating. The selector repeats :not(:last-child)
+     only to match the specificity of the rule it is overriding — a media query
+     adds none of its own. */
+  .site-header__nav a:not(:last-child)::after {
+    content: none;
   }
 
   body.nav-open .site-header__contact {
