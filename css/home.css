@@ -79,42 +79,13 @@
   width: 39%;
 }
 
-.hero__reel {
-  position: absolute;
-  left: 3.47%;
-  top: 73.3%;
-  width: 15.83%;
-  /* 16:9 rather than the mockup's 228x142 so the video cover isn't cropped */
-  aspect-ratio: 16 / 9;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-/* not mirrored: the poster carries text, which scaleX(-1) would reverse */
-.hero__reel img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero__reel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.12);
-  transition: background 0.2s ease;
-}
-
-.hero__reel:hover::after {
-  background: rgba(0, 0, 0, 0);
-}
-
-/* both the thumbnail and this label open the YouTube channel */
+/* the only thing left in the hero's lower left — it moved into the space the
+   video thumbnail used to occupy */
 .hero__reel-label {
   position: absolute;
-  left: 20.8%;
+  left: 3.47%;
   top: 74.4%;
-  width: 9.5vw;
+  white-space: nowrap;
   font-size: clamp(10px, 1.11vw, 16px);
   font-weight: 700;
   text-transform: uppercase;
@@ -123,10 +94,10 @@
   transition: color 0.2s ease;
 }
 
-/* this label sits on the blue shape, so it darkens on hover — the usual blue
-   would be the colour it is standing on */
+/* it stands on the black part of the hero now that it has moved left, so it
+   takes the usual blue on hover — black here would make it disappear */
 .hero__reel-label:hover {
-  color: var(--c-black);
+  color: var(--c-hover);
 }
 
 .hero__arrow {
@@ -360,26 +331,12 @@
     padding: 20px var(--pad) 28px;
   }
 
-  .hero__reel {
-    position: relative;
-    left: auto;
-    top: auto;
-    width: 136px;
-    flex: none;
-  }
-
   .hero__reel-label {
     position: relative;
     left: auto;
     top: auto;
-    width: auto;
     font-size: 12px;
     line-height: 1.3;
-  }
-
-  /* the band behind it is black here, not blue, so black would vanish */
-  .hero__reel-label:hover {
-    color: var(--c-hover);
   }
 
   .hero__arrow {
