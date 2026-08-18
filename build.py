@@ -382,6 +382,62 @@ def parse_posts(page_html):
     return posts
 
 
+TG_MEDIA_DIR = ROOT / "assets" / "tg"
+
+
+def archive_media(pid, url, suffix=""):
+    """Pull a post's image into the repo and hand back its path on the site.
+
+    Telegram serves media from time-limited CDN links. The ones committed a
+    week ago now 404, and the same picture comes back under a different
+    address — so a post meant to keep one URL for good cannot point at them.
+    Each image is fetched once and then lives here.
+
+    Files already on disk are never re-fetched, so a build costs one request
+    per genuinely new post, and on Netlify — where everything is already
+    committed — usually none at all.
+    """
+    if not url:
+        return ""
+    name = f"{pid}{suffix}.jpg"
+    dest = TG_MEDIA_DIR / name
+    rel = f"assets/tg/{name}"
+    if dest.exists():
+        return rel
+    if out_of_time():
+        return ""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = resp.read()
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        print(f"  media {pid}: {exc}")
+        return ""
+    # a truncated or error body is worse than no image at all
+    if len(data) < 512 or not data.startswith(b"\xff\xd8"):
+        return ""
+    TG_MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(data)
+    return rel
+
+
+def archive_all_media(posts):
+    """Localise every post's media, reporting how much was newly fetched."""
+    fetched = 0
+    for p in posts:
+        if p["video_thumb"]:
+            before = (TG_MEDIA_DIR / f"{p['id']}-v.jpg").exists()
+            p["video_thumb"] = archive_media(p["id"], p["video_thumb"], "-v")
+            fetched += 0 if before else bool(p["video_thumb"])
+        elif p["photo"]:
+            before = (TG_MEDIA_DIR / f"{p['id']}.jpg").exists()
+            p["photo"] = archive_media(p["id"], p["photo"])
+            fetched += 0 if before else bool(p["photo"])
+    if fetched:
+        print(f"  archived {fetched} new images")
+    return posts
+
+
 def fetch_telegram(limit=TG_MAX_POSTS):
     """Returns (posts, complete). complete is False when the walk was cut
     short, in which case the caller must not overwrite the committed feed
@@ -417,7 +473,7 @@ def fetch_telegram(limit=TG_MAX_POSTS):
             break
 
     collected.sort(key=lambda p: p["id"], reverse=True)
-    return collected[:limit], complete
+    return archive_all_media(collected[:limit]), complete
 
 
 def render_post(p, index):
