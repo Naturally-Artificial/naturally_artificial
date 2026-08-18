@@ -52,7 +52,6 @@ PAGE_PATHS = {
     "show.html": "/show",
     "speaking.html": "/speaking",
     "contact.html": "/contact",
-    "presskit.html": "/presskit",
     "privacy.html": "/privacy",
     "terms.html": "/terms",
 }
@@ -65,7 +64,7 @@ OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
 # Cache-busting suffix for the generated pages' stylesheet links. Keep it in
 # step with the ?v= the hand-written pages carry.
-ASSET_V = 43
+ASSET_V = 44
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
@@ -701,7 +700,7 @@ BLOG_FOOT = """  </main>
         <div class="site-footer__col site-footer__col--right">
           <p class="site-footer__col-title">Links</p>
           <ul>
-            <li><a href="/presskit">Press kit</a></li>
+            <li><a href="/show#presskit">Press kit</a></li>
           </ul>
         </div>
       </div>
@@ -1273,7 +1272,7 @@ def main():
         print("Press kit numbers…")
         stats = render_stats(all_videos)
         if stats:
-            inject("presskit.html", "stats", stats)
+            inject("show.html", "stats", stats)
         else:
             print("  incomplete — keeping the committed numbers")
 

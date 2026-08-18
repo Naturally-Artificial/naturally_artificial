@@ -34,3 +34,10 @@
   to = "/blog"
   status = 301
   force = true
+
+# The press kit is a section of the show page now, not a page of its own.
+[[redirects]]
+  from = "/presskit"
+  to = "/show#presskit"
+  status = 301
+  force = true

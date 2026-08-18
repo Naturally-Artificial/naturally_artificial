@@ -266,3 +266,94 @@
     padding: 12px 20px;
   }
 }
+
+/* ============================================================
+   The press-kit material, moved in from its own page. The prose
+   styling used to come from legal.css; it is restated here so the
+   show page carries only the stylesheets it needs.
+   ============================================================ */
+
+.show-kit {
+  margin-top: 110px;
+}
+
+.show-kit__label {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.show-kit__heading {
+  margin-top: 12px;
+  margin-bottom: 40px;
+  font-size: clamp(32px, 3.6vw, 52px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.show-kit__inner {
+  max-width: 680px;
+}
+
+.show-kit__inner h2 {
+  margin-top: 48px;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.show-kit__inner h2:first-child {
+  margin-top: 0;
+}
+
+.show-kit__inner p,
+.show-kit__inner li {
+  margin-top: 14px;
+  font-size: 18px;
+  line-height: 30px;
+  color: var(--c-gray);
+}
+
+.show-kit__inner strong {
+  color: var(--c-black);
+  font-weight: 500;
+}
+
+.show-kit__inner a {
+  color: var(--c-hover);
+  text-decoration: underline;
+  text-underline-position: from-font;
+}
+
+.show-kit__inner a:hover {
+  color: var(--c-black);
+}
+
+@media (max-width: 1024px) {
+  .show-kit {
+    margin-top: 80px;
+  }
+}
+
+@media (max-width: 767px) {
+  .show-kit {
+    margin-top: 60px;
+  }
+
+  .show-kit__heading {
+    margin-bottom: 28px;
+  }
+
+  .show-kit__inner h2 {
+    margin-top: 38px;
+    font-size: 22px;
+  }
+
+  .show-kit__inner p,
+  .show-kit__inner li {
+    font-size: 17px;
+    line-height: 28px;
+  }
+}
