@@ -50,7 +50,6 @@ PAGE_PATHS = {
     "index.html": "/",
     "about.html": "/about",
     "show.html": "/show",
-    "telegram.html": "/telegram",
     "speaking.html": "/speaking",
     "contact.html": "/contact",
     "presskit.html": "/presskit",
@@ -66,7 +65,7 @@ OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
 # Cache-busting suffix for the generated pages' stylesheet links. Keep it in
 # step with the ?v= the hand-written pages carry.
-ASSET_V = 41
+ASSET_V = 43
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
@@ -676,10 +675,9 @@ BLOG_FOOT = """  </main>
         <div class="site-footer__col">
           <p class="site-footer__col-title">Navigate</p>
           <ul>
-            <li><a href="/about">About</a></li>
-            <li><a href="/show">Show</a></li>
+            <li><a href="/show">About Naturally Artificial</a></li>
+            <li><a href="/about">About Sergey Osipov</a></li>
             <li><a href="/blog/">Blog</a></li>
-            <li><a href="/speaking">Speaking</a></li>
             <li><a href="/contact">Contact</a></li>
           </ul>
         </div>
@@ -1285,16 +1283,6 @@ def main():
         build_search_files(posts)
         inject("index.html", "home-posts", render_home_posts(ordered))
 
-        inject(
-            "telegram.html",
-            "posts",
-            "\n".join(render_post(p, i) for i, p in enumerate(posts)),
-        )
-        inject(
-            "telegram.html",
-            "count",
-            f'        <span class="tg-count">{len(posts)} posts</span>',
-        )
 
     print("done")
 
