@@ -64,6 +64,10 @@ LOW_PRIORITY = {"privacy.html", "terms.html"}
 
 OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
+# Cache-busting suffix for the generated pages' stylesheet links. Keep it in
+# step with the ?v= the hand-written pages carry.
+ASSET_V = 41
+
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
 YT_FEED = f"https://www.youtube.com/feeds/videos.xml?channel_id={YT_CHANNEL_ID}"
@@ -506,6 +510,414 @@ def render_post(p, index):
 
 
 # --------------------------------------------------------------------------
+# the blog: one permanent page per Telegram post
+# --------------------------------------------------------------------------
+
+BLOG_DIR = ROOT / "blog"
+SLUG_FILE = BLOG_DIR / "slugs.json"
+SLUG_MAX = 60
+
+
+def post_plain(p):
+    """The post as plain text, for titles, descriptions and slugs."""
+    t = re.sub(r"<br\s*/?>", " ", p.get("text", ""))
+    t = re.sub(r"<[^>]+>", "", t)
+    return re.sub(r"\s+", " ", html.unescape(t)).strip()
+
+
+def slugify(text, pid):
+    words = [w for w in re.sub(r"[^a-z0-9]+", "-", text.lower()).split("-") if w]
+    out = ""
+    for w in words:
+        if out and len(out) + 1 + len(w) > SLUG_MAX:
+            break
+        out = f"{out}-{w}" if out else w
+    return out or f"post-{pid}"
+
+
+def assign_slugs(posts):
+    """Fix each post's address the first time we see it, and never move it.
+
+    The slug comes from the opening words — that is what makes it readable and
+    worth anything to a search engine. But Telegram posts can be edited after
+    publication, and a slug that tracked the text would relocate the page and
+    break every link ever made to it. So the mapping is written down once, in
+    slugs.json, and honoured from then on regardless of what the text becomes.
+    """
+    try:
+        ledger = json.loads(SLUG_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        ledger = {}
+
+    taken = set(ledger.values())
+    added = 0
+    for p in posts:
+        key = str(p["id"])
+        if key in ledger:
+            p["slug"] = ledger[key]
+            continue
+        base = slugify(post_plain(p)[:140], p["id"])
+        slug, n = base, 2
+        while slug in taken:
+            slug = f"{base}-{n}"
+            n += 1
+        ledger[key] = p["slug"] = slug
+        taken.add(slug)
+        added += 1
+
+    if added:
+        BLOG_DIR.mkdir(parents=True, exist_ok=True)
+        SLUG_FILE.write_text(
+            json.dumps(ledger, indent=1, sort_keys=True, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        print(f"  {added} new slugs recorded")
+    return posts
+
+
+def post_title(p, limit=65):
+    """Telegram posts carry no title, so the opening sentence becomes one."""
+    plain = post_plain(p)
+    if not plain:
+        return f"Post {p['id']}"
+    cut = re.split(r"(?<=[.!?])\s", plain)[0]
+    if len(cut) > limit:
+        cut = cut[:limit].rsplit(" ", 1)[0] + "…"
+    return cut
+
+
+def post_body_excerpt(p, limit=120):
+    """What comes after the sentence that became the title.
+
+    The index prints both, and drawing them from the same opening sentence
+    made every entry say itself twice.
+    """
+    plain = post_plain(p)
+    head = re.split(r"(?<=[.!?])\s", plain)[0]
+    rest = plain[len(head):].strip()
+    src = rest or plain
+    if len(src) <= limit:
+        return src
+    return src[:limit].rsplit(" ", 1)[0] + "…"
+
+
+def post_summary(p, limit=155):
+    plain = post_plain(p)
+    if not plain:
+        return "A post from the Naturally Artificial Telegram channel."
+    if len(plain) <= limit:
+        return plain
+    return plain[:limit].rsplit(" ", 1)[0] + "…"
+
+
+# Generated pages address everything from the site root: they live one folder
+# down, and root-relative paths spare every template a ../ that would have to
+# change the moment a page moves.
+BLOG_HEAD = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <meta name="description" content="{desc}">
+  <link rel="canonical" href="{canonical}">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="{og_type}">
+  <meta property="og:site_name" content="Naturally Artificial">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:url" content="{canonical}">
+  <meta property="og:title" content="{title}">
+  <meta property="og:description" content="{desc}">
+  <meta property="og:image" content="{image}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{title}">
+  <meta name="twitter:description" content="{desc}">
+  <meta name="twitter:image" content="{image}">
+  <script type="application/ld+json">{jsonld}</script>
+  <link rel="icon" href="/assets/favicon/favicon.ico" sizes="32x32">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon/favicon-512.png">
+  <link rel="apple-touch-icon" href="/assets/favicon/favicon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css?v={v}">
+  <link rel="stylesheet" href="/css/blog.css?v={v}">
+</head>
+<body id="top" class="blog-page">
+
+  <header class="site-header site-header--dark">
+    <a class="site-header__logo" href="/" aria-label="Naturally Artificial — home">
+      <img src="/assets/logo.svg" alt="Naturally Artificial">
+    </a>
+    <nav class="site-header__nav" aria-label="Main navigation">
+      <a href="/about">About</a>
+      <a href="/show">Show</a>
+      <a href="/blog"{blog_current}>Blog</a>
+      <a href="/speaking">Speaking</a>
+    </nav>
+    <a class="site-header__contact" href="/contact">Contact Sergey</a>
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+  </header>
+
+  <main>
+"""
+
+BLOG_FOOT = """  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <div class="site-footer__top">
+        <p class="site-footer__heading">Join the founder-to-founder<br>talks in AI era</p>
+        <a class="site-footer__book" href="{yt}" target="_blank" rel="noopener">Subscribe on YouTube</a>
+      </div>
+      <hr class="site-footer__divider">
+      <div class="site-footer__cols">
+        <div class="site-footer__col">
+          <p class="site-footer__col-title">Navigate</p>
+          <ul>
+            <li><a href="/about">About</a></li>
+            <li><a href="/show">Show</a></li>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/speaking">Speaking</a></li>
+            <li><a href="/contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__col">
+          <p class="site-footer__col-title">Naturally Artificial</p>
+          <ul>
+            <li><a href="https://t.me/naturally_artificial" target="_blank" rel="noopener">Telegram</a></li>
+            <li><a href="{yt}" target="_blank" rel="noopener">YouTube</a></li>
+            <li><a href="https://open.spotify.com/show/033U1gDnjee2ValRcN3vWX" target="_blank" rel="noopener">Spotify</a></li>
+            <li><a href="https://www.linkedin.com/company/naturally-artificial/" target="_blank" rel="noopener">LinkedIn</a></li>
+            <li><a href="https://www.instagram.com/naturally__artificial/" target="_blank" rel="noopener">Instagram</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__col">
+          <p class="site-footer__col-title">Sergey Osipov</p>
+          <ul>
+            <li><a href="https://www.linkedin.com/in/osipov/" target="_blank" rel="noopener">LinkedIn</a></li>
+            <li><a href="https://www.instagram.com/os_on_the_island/" target="_blank" rel="noopener">Instagram</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__col site-footer__col--right">
+          <p class="site-footer__col-title">Links</p>
+          <ul>
+            <li><a href="/presskit">Press kit</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="site-footer__bottom">
+        <p>Copyright © Joox LTD</p>
+        <a class="back-to-top" href="#top">Back to top <img src="/assets/arrow-up.svg" alt=""></a>
+        <span class="site-footer__legal">
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Use</a>
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/main.js?v={v}"></script>
+</body>
+</html>
+"""
+
+
+def post_media_html(p, lazy=True):
+    load = ' loading="lazy"' if lazy else ""
+    if p.get("video_thumb"):
+        badge = (
+            f'<span class="tg-post__duration">{html.escape(p["duration"])}</span>'
+            if p.get("duration")
+            else ""
+        )
+        return (
+            f'<div class="tg-post__media tg-post__media--video">'
+            f'<img src="/{p["video_thumb"]}" alt=""{load}>'
+            f'<span class="tg-post__play" aria-hidden="true"></span>{badge}</div>'
+        )
+    if p.get("photo"):
+        return f'<div class="tg-post__media"><img src="/{p["photo"]}" alt=""{load}></div>'
+    return ""
+
+
+def render_post_page(p, newer, older):
+    title = post_title(p)
+    desc = post_summary(p)
+    canonical = f"{SITE_URL}/blog/{p['slug']}"
+    media = p.get("photo") or p.get("video_thumb")
+    image = f"{SITE_URL}/{media}" if media else f"{SITE_URL}{OG_IMAGE}"
+    iso = p["date"].isoformat() if p.get("date") else ""
+
+    data = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "@id": f"{canonical}#post",
+        "headline": title,
+        "description": desc,
+        "url": canonical,
+        "mainEntityOfPage": canonical,
+        "inLanguage": "en",
+        "image": image,
+        "author": {"@type": "Person", "name": "Sergey Osipov"},
+        "publisher": {
+            "@type": "Organization",
+            "name": "Naturally Artificial",
+            "url": f"{SITE_URL}/",
+        },
+        "isPartOf": {"@type": "Blog", "@id": f"{SITE_URL}/blog#blog"},
+    }
+    if iso:
+        data["datePublished"] = iso
+
+    head = BLOG_HEAD.format(
+        title=html.escape(f"{title} — Naturally Artificial", quote=True),
+        desc=html.escape(desc, quote=True),
+        canonical=canonical,
+        og_type="article",
+        image=image,
+        jsonld=json.dumps(data, ensure_ascii=False, separators=(",", ":")),
+        v=ASSET_V,
+        blog_current=' class="active" aria-current="page"',
+    )
+
+    stamp = (
+        f'<time datetime="{iso}">{p["date"].strftime("%d %B %Y")}</time>'
+        if p.get("date")
+        else ""
+    )
+    views = (
+        f'<span class="post-views">{html.escape(p["views"])} views</span>'
+        if p.get("views")
+        else ""
+    )
+
+    nav = []
+    if older:
+        nav.append(
+            f'<a class="post-nav__prev" href="/blog/{older["slug"]}">'
+            f'<span>Older</span>{html.escape(post_title(older, 48))}</a>'
+        )
+    if newer:
+        nav.append(
+            f'<a class="post-nav__next" href="/blog/{newer["slug"]}">'
+            f'<span>Newer</span>{html.escape(post_title(newer, 48))}</a>'
+        )
+
+    body = f"""    <article class="post container">
+      <p class="post__back"><a href="/blog">All posts</a></p>
+      <h1 class="post__title">{html.escape(title)}</h1>
+      <p class="post__meta">{stamp}{views}</p>
+      {post_media_html(p, lazy=False)}
+      <div class="post__text">{p.get("text", "")}</div>
+      <p class="post__source"><a href="{p['url']}" target="_blank" rel="noopener">Open in Telegram</a></p>
+    </article>
+
+    <nav class="post-nav container" aria-label="More posts">
+      {"".join(nav)}
+    </nav>
+"""
+    return head + body + BLOG_FOOT.format(yt=YT_HANDLE, v=ASSET_V)
+
+
+def render_blog_index(posts):
+    canonical = f"{SITE_URL}/blog"
+    desc = (
+        "Every post from the Naturally Artificial Telegram channel — on AI "
+        "disruption, roll-ups, raising capital in the EU, tech hubs and relocation."
+    )
+    data = {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "@id": f"{canonical}#blog",
+        "name": "Naturally Artificial",
+        "url": canonical,
+        "description": desc,
+        "inLanguage": "en",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Naturally Artificial",
+            "url": f"{SITE_URL}/",
+        },
+    }
+    head = BLOG_HEAD.format(
+        title="Blog — Naturally Artificial",
+        desc=html.escape(desc, quote=True),
+        canonical=canonical,
+        og_type="website",
+        image=f"{SITE_URL}{OG_IMAGE}",
+        jsonld=json.dumps(data, ensure_ascii=False, separators=(",", ":")),
+        v=ASSET_V,
+        blog_current=' class="active" aria-current="page"',
+    )
+
+    # every entry is a real link in the markup — the batching below is for
+    # readers, never for crawlers
+    items = []
+    for i, p in enumerate(posts):
+        stamp = (
+            f'<time datetime="{p["date"].isoformat()}">{p["date"].strftime("%d %b %Y")}</time>'
+            if p.get("date")
+            else ""
+        )
+        hidden = " blog-item--hidden" if i >= 30 else ""
+        items.append(
+            f'        <li class="blog-item{hidden}">\n'
+            f'          <a href="/blog/{p["slug"]}">\n'
+            f'            <h2 class="blog-item__title">{html.escape(post_title(p, 90))}</h2>\n'
+            f'            <p class="blog-item__excerpt">{html.escape(post_body_excerpt(p))}</p>\n'
+            f"          </a>\n"
+            f'          <p class="blog-item__meta">{stamp}</p>\n'
+            f"        </li>"
+        )
+
+    body = f"""    <section class="blog-head container">
+      <p class="blog-head__label">Blog</p>
+      <h1 class="blog-head__title">Everything from the channel</h1>
+      <p class="blog-head__sub">{html.escape(desc)}</p>
+    </section>
+
+    <section class="blog-list container">
+      <ol class="blog-items" id="blog-items">
+{chr(10).join(items)}
+      </ol>
+      <button class="blog-more" id="blog-more" type="button">Show more posts</button>
+    </section>
+"""
+    return head + body + BLOG_FOOT.format(yt=YT_HANDLE, v=ASSET_V)
+
+
+def build_blog(posts):
+    """One file per post, plus the index. Files for posts that no longer exist
+    are removed, so a deleted Telegram post does not linger as a stale page."""
+    BLOG_DIR.mkdir(parents=True, exist_ok=True)
+    ordered = sorted(posts, key=lambda p: p["id"], reverse=True)
+
+    for i, p in enumerate(ordered):
+        newer = ordered[i - 1] if i > 0 else None
+        older = ordered[i + 1] if i + 1 < len(ordered) else None
+        (BLOG_DIR / f"{p['slug']}.html").write_text(
+            render_post_page(p, newer, older), encoding="utf-8"
+        )
+
+    # The index lives inside the folder, not beside it: a blog.html sitting
+    # next to a blog/ directory leaves the server to guess which one /blog
+    # means, and it guessed a redirect.
+    (BLOG_DIR / "index.html").write_text(render_blog_index(ordered), encoding="utf-8")
+
+    keep = {f"{p['slug']}.html" for p in ordered} | {"slugs.json", "index.html"}
+    removed = 0
+    for f in BLOG_DIR.iterdir():
+        if f.name not in keep:
+            f.unlink()
+            removed += 1
+    print(f"  wrote {len(ordered)} post pages + blog/index.html"
+          f"{f', removed {removed} stale' if removed else ''}")
+    return ordered
+
+
+# --------------------------------------------------------------------------
 # press kit numbers
 # --------------------------------------------------------------------------
 
@@ -720,7 +1132,7 @@ def git_dates():
         return {}
 
 
-def build_search_files():
+def build_search_files(posts=None):
     (ROOT / "robots.txt").write_text(
         "# Everything here is meant to be found.\n"
         "User-agent: *\n"
@@ -744,6 +1156,24 @@ def build_search_files():
         priority = "1.0" if page == "index.html" else "0.3" if page in LOW_PRIORITY else "0.8"
         lines.append(f"    <priority>{priority}</priority>")
         lines.append("  </url>")
+
+    # The blog index and every post. Posts carry their own publication date,
+    # which is a lastmod we can actually vouch for.
+    if posts:
+        lines.append("  <url>")
+        lines.append(f"    <loc>{SITE_URL}/blog</loc>")
+        lines.append("    <priority>0.8</priority>")
+        lines.append("  </url>")
+        for p in sorted(posts, key=lambda x: x["id"], reverse=True):
+            if not p.get("slug"):
+                continue
+            lines.append("  <url>")
+            lines.append(f"    <loc>{SITE_URL}/blog/{p['slug']}</loc>")
+            if p.get("date"):
+                lines.append(f"    <lastmod>{p['date'].date().isoformat()}</lastmod>")
+            lines.append("    <priority>0.6</priority>")
+            lines.append("  </url>")
+
     lines.append("</urlset>")
     (ROOT / "sitemap.xml").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"  wrote sitemap.xml ({len(PAGE_PATHS)} urls"
@@ -828,6 +1258,10 @@ def main():
             print("  incomplete — keeping the committed numbers")
 
     if posts and tg_complete:
+        print("Blog…")
+        build_blog(assign_slugs(posts))
+        build_search_files(posts)
+
         inject(
             "telegram.html",
             "posts",

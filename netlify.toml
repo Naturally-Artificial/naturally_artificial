@@ -26,3 +26,11 @@
   for = "/*.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+# The Telegram feed page is superseded by the blog, which gives every post its
+# own permanent address.
+[[redirects]]
+  from = "/telegram"
+  to = "/blog"
+  status = 301
+  force = true

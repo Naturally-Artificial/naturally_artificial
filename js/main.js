@@ -180,6 +180,28 @@ if (tgFeed && tgMore) {
   tgMore.addEventListener("click", reveal);
 }
 
+// Blog index: reveal in batches. Every entry is already a link in the markup,
+// so hiding them costs a crawler nothing — this is only to keep the first
+// screen short for a reader.
+const blogItems = document.getElementById("blog-items");
+const blogMore = document.getElementById("blog-more");
+if (blogItems && blogMore) {
+  const BATCH = 30;
+  const entries = Array.from(blogItems.querySelectorAll(".blog-item"));
+  let shown = entries.filter((e) => !e.classList.contains("blog-item--hidden")).length;
+
+  const reveal = () => {
+    entries.slice(shown, shown + BATCH).forEach((e) => e.classList.remove("blog-item--hidden"));
+    shown = Math.min(shown + BATCH, entries.length);
+    blogMore.hidden = shown >= entries.length;
+    blogMore.textContent = `Show more posts (${entries.length - shown} left)`;
+  };
+
+  blogMore.hidden = shown >= entries.length;
+  blogMore.textContent = `Show more posts (${entries.length - shown} left)`;
+  blogMore.addEventListener("click", reveal);
+}
+
 // Mobile nav toggle
 const navToggle = document.querySelector(".nav-toggle");
 if (navToggle) {
