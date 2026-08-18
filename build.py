@@ -888,6 +888,28 @@ def render_blog_index(posts):
     return head + body + BLOG_FOOT.format(yt=YT_HANDLE, v=ASSET_V)
 
 
+def render_home_posts(posts, count=5):
+    """The five newest posts on the home page, linking into the blog rather
+    than out to Telegram — the point of the blog is that the site keeps them."""
+    out = []
+    for p in posts[:count]:
+        stamp = (
+            f'<time datetime="{p["date"].isoformat()}">{p["date"].strftime("%d %b %Y")}</time>'
+            if p.get("date")
+            else ""
+        )
+        out.append(
+            f'        <li class="home-post">\n'
+            f'          <a href="blog/{p["slug"]}.html">\n'
+            f'            <h3 class="home-post__title">{html.escape(post_title(p, 90))}</h3>\n'
+            f'            <p class="home-post__excerpt">{html.escape(post_body_excerpt(p, 140))}</p>\n'
+            f"          </a>\n"
+            f'          <p class="home-post__meta">{stamp}</p>\n'
+            f"        </li>"
+        )
+    return "\n".join(out)
+
+
 def build_blog(posts):
     """One file per post, plus the index. Files for posts that no longer exist
     are removed, so a deleted Telegram post does not linger as a stale page."""
@@ -1241,7 +1263,7 @@ def main():
         inject(
             "index.html",
             "episodes",
-            "\n".join(render_episode(v) for v in videos[:4]),
+            "\n".join(render_episode(v) for v in videos[:3]),
         )
         inject(
             "show.html",
@@ -1259,8 +1281,9 @@ def main():
 
     if posts and tg_complete:
         print("Blog…")
-        build_blog(assign_slugs(posts))
+        ordered = build_blog(assign_slugs(posts))
         build_search_files(posts)
+        inject("index.html", "home-posts", render_home_posts(ordered))
 
         inject(
             "telegram.html",
