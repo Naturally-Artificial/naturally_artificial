@@ -653,7 +653,7 @@ BLOG_HEAD = """<!DOCTYPE html>
     <nav class="site-header__nav" aria-label="Main navigation">
       <a href="/about">About</a>
       <a href="/show">Show</a>
-      <a href="/blog"{blog_current}>Blog</a>
+      <a href="/blog/"{blog_current}>Blog</a>
       <a href="/speaking">Speaking</a>
     </nav>
     <a class="site-header__contact" href="/contact">Contact Sergey</a>
@@ -678,7 +678,7 @@ BLOG_FOOT = """  </main>
           <ul>
             <li><a href="/about">About</a></li>
             <li><a href="/show">Show</a></li>
-            <li><a href="/blog">Blog</a></li>
+            <li><a href="/blog/">Blog</a></li>
             <li><a href="/speaking">Speaking</a></li>
             <li><a href="/contact">Contact</a></li>
           </ul>
@@ -766,7 +766,7 @@ def render_post_page(p, newer, older):
             "name": "Naturally Artificial",
             "url": f"{SITE_URL}/",
         },
-        "isPartOf": {"@type": "Blog", "@id": f"{SITE_URL}/blog#blog"},
+        "isPartOf": {"@type": "Blog", "@id": f"{SITE_URL}/blog/#blog"},
     }
     if iso:
         data["datePublished"] = iso
@@ -806,7 +806,7 @@ def render_post_page(p, newer, older):
         )
 
     body = f"""    <article class="post container">
-      <p class="post__back"><a href="/blog">All posts</a></p>
+      <p class="post__back"><a href="/blog/">All posts</a></p>
       <h1 class="post__title">{html.escape(title)}</h1>
       <p class="post__meta">{stamp}{views}</p>
       {post_media_html(p, lazy=False)}
@@ -822,7 +822,7 @@ def render_post_page(p, newer, older):
 
 
 def render_blog_index(posts):
-    canonical = f"{SITE_URL}/blog"
+    canonical = f"{SITE_URL}/blog/"
     desc = (
         "Every post from the Naturally Artificial Telegram channel — on AI "
         "disruption, roll-ups, raising capital in the EU, tech hubs and relocation."
@@ -1161,7 +1161,7 @@ def build_search_files(posts=None):
     # which is a lastmod we can actually vouch for.
     if posts:
         lines.append("  <url>")
-        lines.append(f"    <loc>{SITE_URL}/blog</loc>")
+        lines.append(f"    <loc>{SITE_URL}/blog/</loc>")
         lines.append("    <priority>0.8</priority>")
         lines.append("  </url>")
         for p in sorted(posts, key=lambda x: x["id"], reverse=True):
