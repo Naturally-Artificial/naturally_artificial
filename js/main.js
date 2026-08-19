@@ -100,18 +100,31 @@ document.querySelectorAll(".contact-form form").forEach((form) => {
     const success = form.querySelector(".contact-form__success");
     let valid = true;
 
-    form.querySelectorAll("input[required], textarea[required]").forEach((field) => {
-      const isEmail = field.type === "email";
-      const filled = field.value.trim().length > 0;
-      const emailOk = !isEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value.trim());
-      const fieldOk = filled && emailOk;
-      field.classList.toggle("invalid", !fieldOk);
-      if (isEmail) {
-        const emailError = field.parentElement.querySelector(".contact-form__error");
-        if (emailError) emailError.classList.toggle("visible", filled && !emailOk);
-      }
-      if (!fieldOk) valid = false;
-    });
+    form
+      .querySelectorAll("input[required], select[required], textarea[required]")
+      .forEach((field) => {
+        const isEmail = field.type === "email";
+        const filled = field.value.trim().length > 0;
+        const emailOk = !isEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value.trim());
+        const fieldOk = filled && emailOk;
+        field.classList.toggle("invalid", !fieldOk);
+        if (isEmail) {
+          const emailError = field.parentElement.querySelector(".contact-form__error");
+          if (emailError) emailError.classList.toggle("visible", filled && !emailOk);
+        }
+        if (!fieldOk) valid = false;
+      });
+
+    // Netlify caps the whole form request at 8 MB, so the file is held to 7 —
+    // the remaining megabyte is for the other fields. Caught here rather than
+    // at the server, where the visitor would only see a failure.
+    const MAX_FILE = 7 * 1024 * 1024;
+    const fileField = form.querySelector('input[type="file"]');
+    const fileError = form.querySelector(".contact-form__error--file");
+    const tooBig = !!(fileField && fileField.files[0] && fileField.files[0].size > MAX_FILE);
+    if (fileField) fileField.classList.toggle("invalid", tooBig);
+    if (fileError) fileError.classList.toggle("visible", tooBig);
+    if (tooBig) valid = false;
 
     if (generalError) generalError.classList.toggle("visible", !valid);
     if (!valid) return;
@@ -121,11 +134,10 @@ document.querySelectorAll(".contact-form form").forEach((form) => {
     const isLocal = ["localhost", "127.0.0.1", ""].includes(location.hostname);
     if (!isLocal) {
       try {
-        const res = await fetch("/", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams(new FormData(form)).toString(),
-        });
+        // Sent as multipart, not url-encoded: an attachment cannot survive
+        // url-encoding. The Content-Type is deliberately left unset so the
+        // browser can add the boundary it generates.
+        const res = await fetch("/", { method: "POST", body: new FormData(form) });
         if (!res.ok) throw new Error("send failed");
       } catch {
         if (generalError) {

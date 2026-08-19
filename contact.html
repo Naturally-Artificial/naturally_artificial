@@ -32,8 +32,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=44">
-  <link rel="stylesheet" href="css/contact.css?v=44">
+  <link rel="stylesheet" href="css/styles.css?v=45">
+  <link rel="stylesheet" href="css/contact.css?v=45">
 </head>
 <body id="top" class="contact-page">
 
@@ -68,9 +68,20 @@
     <section class="contact-forms container">
       <article class="contact-form">
         <h2 class="contact-form__title">Write in</h2>
-        <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+        <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field"
+              enctype="multipart/form-data" novalidate>
           <input type="hidden" name="form-name" value="contact">
           <p class="hp-field"><label>Leave this empty: <input name="bot-field"></label></p>
+          <div>
+            <label for="contact-topic">What is this about</label>
+            <select id="contact-topic" name="topic" required>
+              <option value="" selected disabled>Choose one</option>
+              <option>Suggest a guest</option>
+              <option>Pitch a startup</option>
+              <option>Advertising and collaborations</option>
+              <option>Press</option>
+            </select>
+          </div>
           <div>
             <label for="contact-name">Name</label>
             <input type="text" id="contact-name" name="name" required autocomplete="name">
@@ -87,6 +98,16 @@
           <div>
             <label for="contact-message">Message</label>
             <textarea id="contact-message" name="message" required></textarea>
+          </div>
+          <div>
+            <label for="contact-link">Link to a deck or site <span class="contact-form__optional">optional</span></label>
+            <input type="url" id="contact-link" name="link" placeholder="https://" autocomplete="url">
+            <p class="contact-form__hint">A link carries further than an attachment, and DocSend or Drive will tell you when it was opened.</p>
+          </div>
+          <div>
+            <label for="contact-file">Attach a PDF <span class="contact-form__optional">optional, up to 7 MB</span></label>
+            <input type="file" id="contact-file" name="attachment" accept="application/pdf,.pdf">
+            <p class="contact-form__error contact-form__error--file">That file is over 7 MB — send a link instead.</p>
           </div>
           <p class="contact-form__error contact-form__error--general">Please fill in the required fields.</p>
           <p class="contact-form__success">Message sent — thank you, Sergey will be in touch.</p>
@@ -149,6 +170,6 @@
     </div>
   </footer>
 
-  <script src="js/main.js?v=44"></script>
+  <script src="js/main.js?v=45"></script>
 </body>
 </html>

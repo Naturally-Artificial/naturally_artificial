@@ -64,7 +64,7 @@ OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
 # Cache-busting suffix for the generated pages' stylesheet links. Keep it in
 # step with the ?v= the hand-written pages carry.
-ASSET_V = 44
+ASSET_V = 45
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
