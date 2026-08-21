@@ -29,9 +29,11 @@
 
 # The Telegram feed page is superseded by the blog, which gives every post its
 # own permanent address.
+# Straight to /blog/ with the slash: /blog redirects there itself, and a
+# redirect landing on a redirect costs a hop for no reason.
 [[redirects]]
   from = "/telegram"
-  to = "/blog"
+  to = "/blog/"
   status = 301
   force = true
 
