@@ -43,3 +43,10 @@
   to = "/show"
   status = 301
   force = true
+
+# Speaking is a section of Sergey's page now.
+[[redirects]]
+  from = "/speaking"
+  to = "/about"
+  status = 301
+  force = true

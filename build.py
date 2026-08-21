@@ -50,7 +50,6 @@ PAGE_PATHS = {
     "index.html": "/",
     "about.html": "/about",
     "show.html": "/show",
-    "speaking.html": "/speaking",
     "contact.html": "/contact",
     "privacy.html": "/privacy",
     "terms.html": "/terms",
@@ -64,7 +63,7 @@ OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
 # Cache-busting suffix for the generated pages' stylesheet links. Keep it in
 # step with the ?v= the hand-written pages carry.
-ASSET_V = 45
+ASSET_V = 46
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
@@ -652,7 +651,7 @@ BLOG_HEAD = """<!DOCTYPE html>
       <a href="/about">About</a>
       <a href="/show">Show</a>
       <a href="/blog/"{blog_current}>Blog</a>
-      <a href="/speaking">Speaking</a>
+      <a href="/about#speaking">Speaking</a>
     </nav>
     <a class="site-header__contact" href="/contact">Contact Sergey</a>
     <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
