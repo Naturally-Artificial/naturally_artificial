@@ -2,37 +2,167 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://naturallyartif.netlify.app/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-08-21</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://naturallyartif.netlify.app/about</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-08-21</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://naturallyartif.netlify.app/show</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-08-21</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://naturallyartif.netlify.app/contact</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-08-21</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://naturallyartif.netlify.app/privacy</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-08-21</lastmod>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://naturallyartif.netlify.app/terms</loc>
-    <lastmod>2026-08-19</lastmod>
+    <lastmod>2026-08-21</lastmod>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://naturallyartif.netlify.app/blog/</loc>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/2-years-ago-he-said-ai-would-leave-70-of-the-world-without</loc>
+    <lastmod>2026-11-10</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/post-493</loc>
+    <lastmod>2026-11-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/last-summer-next-35-was-a-list-35-young-belarusians-building</loc>
+    <lastmod>2026-11-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/true-but-clickbait-most-of-the-42bn-is-paper-fair-value</loc>
+    <lastmod>2026-11-05</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/google-stock-is-down-because-of-ai-answers-your-web-traffic</loc>
+    <lastmod>2026-11-02</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/plenty-of-people-fly-to-web-summit-and-never-see-the-expo</loc>
+    <lastmod>2026-10-29</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/attention-is-collapsing-3-years-ago-an-instagram-tiktok</loc>
+    <lastmod>2026-10-27</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/i-keep-meeting-founders-who-shipped-50-features-in-a-month</loc>
+    <lastmod>2026-10-22</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/a-year-ago-an-ai-co-founder-sounded-like-clickbait-today-it</loc>
+    <lastmod>2026-10-13</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/bitcoin-poll-time-where-does-it-go-by-year-end-up-down</loc>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/devfest-cyprus-2026-saturday-31-october-full-day-of-tech</loc>
+    <lastmod>2026-10-09</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/boot-strapping-vs-seed-strapping-50k-vibecoding-instead-of</loc>
+    <lastmod>2026-10-05</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/next-thursday-i-m-talking-ai-in-a-unesco-amphitheatre-free</loc>
+    <lastmod>2026-10-02</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/no-fuckups-no-unicorns-thanks-to-everyone-who-came-to-my</loc>
+    <lastmod>2026-09-30</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/ursula-von-der-leyen-s-performance-metric-related-post-is</loc>
+    <lastmod>2026-09-26</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/3rd-ai-hackathon-is-done-16-teams-120-people-4-minutes-per</loc>
+    <lastmod>2026-09-20</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/almost-late-for-the-photo-shoot-caught-this-on-video-through</loc>
+    <lastmod>2026-09-18</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/in-the-90s-i-borrowed-money-from-criminals-to-pay-salaries</loc>
+    <lastmod>2026-09-15</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/my-telegram-channel-feels-dead-some-weeks-few-likes-no</loc>
+    <lastmod>2026-09-13</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/folks-i-m-filming-a-podcast-episode-right-on-the-stage-all</loc>
+    <lastmod>2026-09-11</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/one-of-his-clients-bans-all-ai-use-in-the-contract-that-same</loc>
+    <lastmod>2026-09-08</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/playsense-picked-up-more-awards-best-bespoke-cinematography</loc>
+    <lastmod>2026-09-07</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/1-3-of-vibecoders-get-money-from-their-experiments-my-own</loc>
+    <lastmod>2026-09-04</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/post-470</loc>
+    <lastmod>2026-09-02</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/students-founders-in-almaty-one-day-no-code-walk-out-with-a</loc>
+    <lastmod>2026-08-31</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/blog/the-game-outsiders-a-documentary-in-progress-mass-layoffs</loc>
+    <lastmod>2026-08-27</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://naturallyartif.netlify.app/blog/eu-fined-x-120m-for-not-being-transparent-enough-musk-s</loc>
