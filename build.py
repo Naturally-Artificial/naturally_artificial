@@ -83,7 +83,7 @@ OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
 # Cache-busting suffix for the stylesheet and the script. Every page gets its
 # links from here, so bumping this one number is the whole job.
-ASSET_V = 52
+ASSET_V = 53
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
@@ -1108,6 +1108,26 @@ def telegram_subscribers():
     return re.sub(r"[\s ]", ",", m.group(1).strip()) if m else ""
 
 
+def youtube_subscribers():
+    """The rounded count YouTube shows under the channel's name ("27.8K").
+
+    The page mentions other channels' counts too, so the match is anchored to
+    this channel's handle. The cookie skips the consent page that is served
+    to European addresses in place of the channel.
+    """
+    req = urllib.request.Request(
+        f"https://www.youtube.com/channel/{YT_CHANNEL_ID}",
+        headers={"User-Agent": UA, "Accept-Language": "en-US,en", "Cookie": "SOCS=CAI"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            page = r.read().decode("utf-8", "replace")
+    except (urllib.error.URLError, TimeoutError):
+        return ""
+    m = re.search(r'@Naturally_Artificial[^"]{0,12}?([\d.,]+[KM]?) subscribers', page)
+    return m.group(1) if m else ""
+
+
 def show_stats(videos):
     """What the show itself does, as opposed to what the channel does.
 
@@ -1137,18 +1157,17 @@ def show_stats(videos):
     }
 
 
-def render_stats(videos, tg=""):
+def render_stats(videos, tg="", yt=""):
     show = show_stats(videos)
     if not show:
         return ""
 
-    # Deliberately not the channel's subscriber count. Almost all of it was
-    # bought through ad campaigns and it churns; quoting it to a sponsor would
-    # be quoting a number that falls apart on their first report. What is left
-    # here is what the show genuinely does.
     # The cadence is stated, not measured: it is the rhythm the show commits
     # to, and a rolling average would swing with every gap and double week.
-    cards = [
+    cards = []
+    if yt:
+        cards.append((yt, "YouTube subscribers", ""))
+    cards += [
         (str(show["episodes"]), "long-form episodes", ""),
         (show["mean"], "mean views per episode", " stat--accent"),
         ("1–2", "new episodes a month", ""),
@@ -1361,13 +1380,13 @@ def build_pages():
 # --------------------------------------------------------------------------
 
 
-def save_cache(videos, posts, tg):
+def save_cache(videos, posts, tg, yt=""):
     def enc(items):
         return [dict(i, date=i["date"].isoformat() if i.get("date") else None) for i in items]
 
     CACHE.parent.mkdir(exist_ok=True)
     CACHE.write_text(
-        json.dumps({"videos": enc(videos), "posts": enc(posts), "tg": tg}, ensure_ascii=False),
+        json.dumps({"videos": enc(videos), "posts": enc(posts), "tg": tg, "yt": yt}, ensure_ascii=False),
         encoding="utf-8",
     )
 
@@ -1380,7 +1399,7 @@ def load_cache():
         data = json.loads(CACHE.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         sys.exit("--offline needs a previous full run: no .cache/feeds.json yet")
-    return dec(data["videos"]), dec(data["posts"]), data.get("tg", "")
+    return dec(data["videos"]), dec(data["posts"]), data.get("tg", ""), data.get("yt", "")
 
 
 def main():
@@ -1392,7 +1411,7 @@ def main():
     build_pages()
 
     if offline:
-        all_videos, posts, tg = load_cache()
+        all_videos, posts, tg, yt = load_cache()
         tg_complete = True
         print(f"  from cache: {len(all_videos)} videos, {len(posts)} posts")
     else:
@@ -1402,8 +1421,9 @@ def main():
         posts, tg_complete = fetch_telegram()
         print(f"  {len(posts)} posts{'' if tg_complete else ' (incomplete — keeping the committed blog)'}")
         tg = telegram_subscribers()
+        yt = youtube_subscribers()
         if all_videos and posts and tg_complete:
-            save_cache(all_videos, posts, tg)
+            save_cache(all_videos, posts, tg, yt)
 
     videos = [v for v in all_videos if v["date"] >= YT_MIN_DATE]
     print(f"  {len(videos)} episodes")
@@ -1416,7 +1436,7 @@ def main():
         inject("show.html", "episodes", "\n".join(render_episode(v) for v in videos))
         inject("guests.html", "episodes", "\n".join(render_episode(v) for v in videos[:6]))
 
-    stats = render_stats(all_videos, tg) if all_videos else ""
+    stats = render_stats(all_videos, tg, yt) if all_videos else ""
     if stats:
         for page in ("show.html", "sponsors.html", "presskit.html"):
             inject(page, "stats", stats)

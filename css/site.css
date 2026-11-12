@@ -890,6 +890,15 @@ button {
   gap: 12px;
 }
 
+/* five cards when the YouTube count is there, four when it could not be read */
+.stats:has(> .stat:nth-child(5)) {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.stats:has(> .stat:nth-child(5)) .stat__num {
+  font-size: clamp(26px, 2.9vw, 42px);
+}
+
 .stat {
   padding: clamp(22px, 2.4vw, 32px);
   border: 1px solid var(--line);
@@ -2293,8 +2302,14 @@ button {
     min-height: 0;
   }
 
-  .stats {
+  .stats,
+  .stats:has(> .stat:nth-child(5)) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* an odd card out takes the full row rather than leaving a hole */
+  .stats > .stat:first-child:nth-last-child(odd) {
+    grid-column: 1 / -1;
   }
 
   .site-footer__cols {
