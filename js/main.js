@@ -251,7 +251,7 @@ document.querySelectorAll(".contact-form form").forEach((form) => {
         if (!res.ok) throw new Error("send failed");
       } catch {
         if (generalError) {
-          generalError.textContent = "Something went wrong — please try again.";
+          generalError.textContent = "Something went wrong — please try again";
           generalError.classList.add("visible");
         }
         return;

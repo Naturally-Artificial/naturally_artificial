@@ -83,7 +83,7 @@ OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
 # Cache-busting suffix for the stylesheet and the script. Every page gets its
 # links from here, so bumping this one number is the whole job.
-ASSET_V = 53
+ASSET_V = 54
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
@@ -961,7 +961,7 @@ def render_post_page(p, newer, older):
         <div class="band">
           {shape("ipomoea")}
           <h2 class="band__title display display--md">The conversations run longer on camera</h2>
-          <p class="band__text">These are the notes between episodes. The show itself is founders talking to founders, 30 to 60 minutes at a time.</p>
+          <p class="band__text">These are the notes between episodes. The show itself is founders talking to founders, 30 to 60 minutes at a time</p>
           <p class="band__cta">
             <a class="btn btn--dark" href="{YT_HANDLE}" target="_blank" rel="noopener">{PLAY_ICON}Watch on YouTube</a>
             <a class="btn btn--ghost" href="{TELEGRAM}" target="_blank" rel="noopener">Follow on Telegram</a>
@@ -1018,7 +1018,7 @@ def render_blog_index(posts):
       <div class="container">
         <p class="eyebrow">Blog</p>
         <h1 class="page-head__title display display--xl">Notes between <em>episodes</em></h1>
-        <p class="lead">{html.escape(desc)}</p>
+        <p class="lead">{html.escape(desc.rstrip("."))}</p>
       </div>
     </section>
 
@@ -1033,7 +1033,7 @@ def render_blog_index(posts):
         <ol class="blog-items" id="blog-items">
 {chr(10).join(items)}
         </ol>
-        <p class="blog-empty" id="blog-empty" hidden>Nothing matches that. Try a shorter word.</p>
+        <p class="blog-empty" id="blog-empty" hidden>Nothing matches that. Try a shorter word</p>
         <button class="btn btn--ghost blog-more" id="blog-more" type="button" hidden>Show more posts</button>
       </div>
     </section>"""
@@ -1184,7 +1184,7 @@ def render_stats(videos, tg="", yt=""):
     out.append("        </div>")
     out.append(
         '        <p class="stats__note">The channel only started running properly '
-        "in January 2025, so these are the numbers from its first months.</p>"
+        "in January 2025, so these are the numbers from its first months</p>"
     )
     return "\n".join(out)
 
