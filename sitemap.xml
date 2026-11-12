@@ -2,16 +2,24 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://naturallyartif.netlify.app/</loc>
-    <lastmod>2026-08-21</lastmod>
+    <lastmod>2026-11-11</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://naturallyartif.netlify.app/about</loc>
-    <lastmod>2026-08-21</lastmod>
+    <loc>https://naturallyartif.netlify.app/show</loc>
+    <lastmod>2026-11-11</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://naturallyartif.netlify.app/show</loc>
+    <loc>https://naturallyartif.netlify.app/sponsors</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/guests</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://naturallyartif.netlify.app/about</loc>
     <lastmod>2026-08-21</lastmod>
     <priority>0.8</priority>
   </url>

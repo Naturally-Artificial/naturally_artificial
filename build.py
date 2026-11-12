@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-Pulls the YouTube channel feed and the Telegram channel archive, then writes
-the results into the pages between the FEED markers.
+Builds the site: pulls the YouTube playlists and the Telegram channel, writes
+the episode lists, the numbers and the blog, and gives every page the same
+head, header and footer.
 
 Runs on stdlib only — no npm, no packages. Same script works locally and in
 the Netlify build image.
 
-    python3 build.py
+    python3 build.py             full run, fetches both feeds
+    python3 build.py --offline   re-render from the last fetch, no network
 
 Each generated region in an HTML file is delimited by:
     <!-- FEED:<name>:start -->  ... generated ...  <!-- FEED:<name>:end -->
@@ -15,6 +17,7 @@ Everything outside the markers is hand-written and never touched.
 
 import html
 import json
+import os
 import re
 import subprocess
 import sys
@@ -31,7 +34,7 @@ ROOT = Path(__file__).parent
 # past its limit, and a killed build leaves the previous deploy live — so
 # fetching is time-boxed and whatever isn't ready keeps its committed
 # version instead.
-BUDGET_SECONDS = 100
+BUDGET_SECONDS = int(os.environ.get("BUILD_BUDGET", "100"))
 STARTED = time.monotonic()
 
 
@@ -48,12 +51,28 @@ SITE_URL = "https://naturallyartif.netlify.app"
 # engines index both spellings of every page.
 PAGE_PATHS = {
     "index.html": "/",
-    "about.html": "/about",
     "show.html": "/show",
+    "sponsors.html": "/sponsors",
+    "guests.html": "/guests",
+    "about.html": "/about",
     "contact.html": "/contact",
     "privacy.html": "/privacy",
     "terms.html": "/terms",
 }
+
+# which nav entry lights up on which page
+NAV_KEY = {
+    "show.html": "show",
+    "sponsors.html": "sponsors",
+    "guests.html": "guests",
+    "about.html": "about",
+}
+
+# gets the same chrome and stylesheet, stays out of search and the sitemap
+UNLISTED = ["404.html"]
+
+# the last successful fetch; `build.py --offline` re-renders from it
+CACHE = ROOT / ".cache" / "feeds.json"
 
 # Legal pages belong in the sitemap but shouldn't compete with the real
 # content, so they carry a lower priority.
@@ -61,9 +80,9 @@ LOW_PRIORITY = {"privacy.html", "terms.html"}
 
 OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
-# Cache-busting suffix for the generated pages' stylesheet links. Keep it in
-# step with the ?v= the hand-written pages carry.
-ASSET_V = 46
+# Cache-busting suffix for the stylesheet and the script. Every page gets its
+# links from here, so bumping this one number is the whole job.
+ASSET_V = 50
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
@@ -272,23 +291,257 @@ def fetch_youtube():
     return recent, videos
 
 
-def render_episode(v, with_summary=True):
-    views = f"{v['views']} views • " if v["views"] else ""
-    summary = ""
-    if with_summary and v["summary"]:
-        summary = (
-            f'\n            <p class="episode__desc">'
-            f"{html.escape(v['summary'], quote=False)}</p>"
+# --------------------------------------------------------------------------
+# chrome: the header, the footer and the shared part of every <head>
+# --------------------------------------------------------------------------
+# One definition for all of it. The hand-written pages receive these between
+# markers and the generated ones are built from the same functions, so the
+# navigation cannot differ from page to page. Links are root-relative and keep
+# their .html: that resolves on a plain local server, and Netlify shortens
+# them to the canonical form when it publishes.
+
+SPOTIFY = "https://open.spotify.com/show/033U1gDnjee2ValRcN3vWX"
+TELEGRAM = f"https://t.me/{TG_CHANNEL}"
+
+NAV = [
+    ("show", "/show.html", "Show"),
+    ("blog", "/blog/", "Blog"),
+    ("about", "/about.html", "Host"),
+    ("sponsors", "/sponsors.html", "For sponsors"),
+]
+
+PLAY_ICON = '<svg class="btn__icon" viewBox="0 0 12 14" aria-hidden="true" focusable="false"><path d="M12 7 0 14V0z"/></svg>'
+
+
+def shape(name, extra=""):
+    cls = f"shape-wrap {extra}".strip()
+    return (
+        f'<span class="{cls}" aria-hidden="true"><svg class="shape" focusable="false">'
+        f'<use href="/assets/shapes/sprite.svg#{name}"/></svg></span>'
+    )
+
+
+def render_header(active=None):
+    def cur(key):
+        return ' aria-current="page"' if key == active else ""
+
+    links = "\n".join(
+        f'        <a class="site-nav__link" href="{href}"{cur(key)}>{label}</a>'
+        for key, href, label in NAV
+    )
+    return f"""  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header" data-header>
+    <div class="site-header__inner">
+      <a class="site-header__logo" href="/" aria-label="Naturally Artificial — home">
+        <img src="/assets/logo.svg" alt="Naturally Artificial" width="100" height="49">
+      </a>
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+{links}
+        <a class="btn btn--primary btn--sm" href="/guests.html"{cur("guests")}>Be a guest</a>
+      </nav>
+      <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Open menu"><span></span><span></span></button>
+    </div>
+  </header>"""
+
+
+def render_footer():
+    return f"""  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__cta">
+        {shape("cornflower")}
+        <p class="display display--lg">Join the founder-to-founder talks in the <em>AI era</em></p>
+        <a class="btn btn--primary" href="{YT_HANDLE}" target="_blank" rel="noopener">{PLAY_ICON}Subscribe on YouTube</a>
+      </div>
+      <div class="site-footer__cols">
+        <div>
+          <p class="site-footer__h">The show</p>
+          <ul>
+            <li><a href="/show.html">About Naturally Artificial</a></li>
+            <li><a href="/show.html#episodes">Episodes</a></li>
+            <li><a href="/blog/">Blog</a></li>
+            <li><a href="/about.html">About Sergey Osipov</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="site-footer__h">Work with us</p>
+          <ul>
+            <li><a href="/sponsors.html">For sponsors</a></li>
+            <li><a href="/guests.html">Be a guest</a></li>
+            <li><a href="/show.html#presskit">Press kit</a></li>
+            <li><a href="/contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="site-footer__h">Naturally Artificial</p>
+          <ul>
+            <li><a href="{YT_HANDLE}" target="_blank" rel="noopener">YouTube</a></li>
+            <li><a href="{SPOTIFY}" target="_blank" rel="noopener">Spotify</a></li>
+            <li><a href="{TELEGRAM}" target="_blank" rel="noopener">Telegram</a></li>
+            <li><a href="https://www.linkedin.com/company/naturally-artificial/" target="_blank" rel="noopener">LinkedIn</a></li>
+            <li><a href="https://www.instagram.com/naturally__artificial/" target="_blank" rel="noopener">Instagram</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="site-footer__h">Sergey Osipov</p>
+          <ul>
+            <li><a href="https://www.linkedin.com/in/osipov/" target="_blank" rel="noopener">LinkedIn</a></li>
+            <li><a href="https://www.instagram.com/os_on_the_island/" target="_blank" rel="noopener">Instagram</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="site-footer__bottom">
+        <a class="site-footer__logo" href="/" aria-label="Naturally Artificial by Sergey Osipov — home">
+          <img src="/assets/na-logo-white.svg" alt="Naturally Artificial by Sergey Osipov" width="347" height="225" loading="lazy">
+        </a>
+        <p>Copyright © Joox LTD</p>
+        <p class="site-footer__legal">
+          <a href="/privacy.html">Privacy Policy</a>
+          <a href="/terms.html">Terms of Use</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/main.js?v={ASSET_V}" defer></script>"""
+
+
+OG_ALT = "Naturally Artificial — founder-to-founder talks in the AI era"
+
+SOCIAL_SHOW = [
+    YT_HANDLE,
+    TELEGRAM,
+    SPOTIFY,
+    "https://www.linkedin.com/company/naturally-artificial/",
+    "https://www.instagram.com/naturally__artificial/",
+]
+SOCIAL_HOST = [
+    "https://www.linkedin.com/in/osipov/",
+    "https://www.instagram.com/os_on_the_island/",
+]
+
+
+def head_tags(title, desc, canonical=None, og_type="website", image=None, jsonld=None):
+    """Everything in <head> after the title and description.
+
+    canonical=None marks a page that should stay out of search — the 404.
+    """
+    t, d = html.escape(title, quote=True), html.escape(desc, quote=True)
+    image = image or f"{SITE_URL}{OG_IMAGE}"
+    tags = []
+    if canonical:
+        tags += [
+            f'<link rel="canonical" href="{canonical}">',
+            '<meta name="robots" content="index, follow, max-image-preview:large">',
+            f'<meta property="og:type" content="{og_type}">',
+            '<meta property="og:site_name" content="Naturally Artificial">',
+            '<meta property="og:locale" content="en_US">',
+            f'<meta property="og:url" content="{canonical}">',
+            f'<meta property="og:title" content="{t}">',
+            f'<meta property="og:description" content="{d}">',
+            f'<meta property="og:image" content="{image}">',
+            f'<meta property="og:image:alt" content="{OG_ALT}">',
+            '<meta name="twitter:card" content="summary_large_image">',
+            f'<meta name="twitter:title" content="{t}">',
+            f'<meta name="twitter:description" content="{d}">',
+            f'<meta name="twitter:image" content="{image}">',
+        ]
+    else:
+        tags.append('<meta name="robots" content="noindex, follow">')
+    if jsonld:
+        tags.append(
+            '<script type="application/ld+json">'
+            + json.dumps(jsonld, ensure_ascii=False, separators=(",", ":"))
+            + "</script>"
         )
-    # width/height match the 16:9 thumbnail so the box is reserved correctly
-    # before the image loads
-    return f"""        <a class="episode" href="{v['url']}" target="_blank" rel="noopener">
-          <img class="episode__thumb" src="{v['thumb']}" alt="" loading="lazy" width="1280" height="720">
-          <div class="episode__meta">
-            <h3 class="episode__title">{html.escape(v['title'], quote=False)}</h3>{summary}
-            <p class="episode__views">{views}{ago(v['date'])}</p>
-          </div>
+    tags += [
+        '<meta name="theme-color" content="#101010">',
+        '<link rel="icon" href="/assets/favicon/favicon.ico" sizes="32x32">',
+        '<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32.png">',
+        '<link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon/favicon-512.png">',
+        '<link rel="apple-touch-icon" href="/assets/favicon/favicon-180.png">',
+        # the two faces every page paints with, fetched before the stylesheet asks
+        '<link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>',
+        '<link rel="preload" href="/assets/fonts/boldonse-latin.woff2" as="font" type="font/woff2" crossorigin>',
+        f'<link rel="stylesheet" href="/css/site.css?v={ASSET_V}">',
+        # lets the stylesheet hold content back for the reveal only when the
+        # script that releases it is certain to run
+        "<script>document.documentElement.classList.add('js')</script>",
+    ]
+    return "\n".join("  " + tag for tag in tags)
+
+
+def page_shell(title, desc, body, *, canonical, active=None, og_type="website", image=None, jsonld=None):
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{html.escape(title, quote=False)}</title>
+  <meta name="description" content="{html.escape(desc, quote=True)}">
+{head_tags(title, desc, canonical, og_type, image, jsonld)}
+</head>
+<body>
+{render_header(active)}
+
+  <main id="main">
+{body}
+  </main>
+
+{render_footer()}
+</body>
+</html>
+"""
+
+
+# --------------------------------------------------------------------------
+# episodes
+# --------------------------------------------------------------------------
+
+
+def lang_attr(text):
+    """Episode titles arrive in the language they were published in; marking
+    the Russian ones lets a screen reader pronounce them and a browser offer
+    to translate them."""
+    cyr = len(re.findall(r"[А-Яа-яЁё]", text))
+    lat = len(re.findall(r"[A-Za-z]", text))
+    return ' lang="ru"' if cyr > lat else ""
+
+
+def episode_meta(v):
+    views = f"{v['views']} views • " if v["views"] else ""
+    return f"{views}{ago(v['date'])}"
+
+
+def render_episode(v):
+    title = html.escape(v["title"], quote=False)
+    # width/height match the 16:9 thumbnail so the box is reserved before it loads
+    return f"""        <a class="ep" href="{v['url']}" target="_blank" rel="noopener">
+          <span class="ep__thumb"><img src="{v['thumb']}" alt="" loading="lazy" width="1280" height="720"></span>
+          <h3 class="ep__title"{lang_attr(v['title'])}>{title}</h3>
+          <p class="ep__meta">{episode_meta(v)}</p>
         </a>"""
+
+
+def render_feature(v):
+    title = html.escape(v["title"], quote=False)
+    alt = html.escape(v["title"], quote=True)
+    desc = (
+        f'\n            <p class="feature__desc"{lang_attr(v["summary"])}>{html.escape(v["summary"], quote=False)}</p>'
+        if v["summary"]
+        else ""
+    )
+    return f"""        <article class="feature" data-reveal>
+          <div class="video-embed" data-video="{v['id']}">
+            <img class="video-embed__poster" src="{v['thumb']}" alt="{alt}" width="1280" height="720">
+            <button class="video-embed__trigger" type="button" aria-label="Play “{alt}”">
+              <span class="video-embed__play" aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="feature__body">
+            <p class="feature__meta">{episode_meta(v)}</p>
+            <h2 class="feature__title"{lang_attr(v['title'])}>{title}</h2>{desc}
+            <p class="feature__cta"><a class="btn btn--ghost" href="{v['url']}" target="_blank" rel="noopener">Watch on YouTube</a></p>
+          </div>
+        </article>"""
 
 
 # --------------------------------------------------------------------------
@@ -477,35 +730,6 @@ def fetch_telegram(limit=TG_MAX_POSTS):
     return archive_all_media(collected[:limit]), complete
 
 
-def render_post(p, index):
-    media = ""
-    if p["video_thumb"]:
-        badge = f'<span class="tg-post__duration">{html.escape(p["duration"])}</span>' if p["duration"] else ""
-        media = (
-            f'<div class="tg-post__media tg-post__media--video">'
-            f'<img src="{html.escape(p["video_thumb"], quote=True)}" alt="" loading="lazy">'
-            f'<span class="tg-post__play" aria-hidden="true"></span>{badge}</div>'
-        )
-    elif p["photo"]:
-        media = (
-            f'<div class="tg-post__media">'
-            f'<img src="{html.escape(p["photo"], quote=True)}" alt="" loading="lazy"></div>'
-        )
-
-    stamp = ""
-    if p["date"]:
-        stamp = f'<time datetime="{p["date"].isoformat()}">{p["date"].strftime("%d %b %Y")}</time>'
-    views = f'<span class="tg-post__views">{html.escape(p["views"])} views</span>' if p["views"] else ""
-
-    body = f'<div class="tg-post__text">{p["text"]}</div>' if p["text"] else ""
-
-    return f"""        <article class="tg-post" data-i="{index}">
-          {media}
-          {body}
-          <footer class="tg-post__foot">{stamp}{views}<a class="tg-post__link" href="{p['url']}" target="_blank" rel="noopener">Open in Telegram</a></footer>
-        </article>"""
-
-
 # --------------------------------------------------------------------------
 # the blog: one permanent page per Telegram post
 # --------------------------------------------------------------------------
@@ -607,134 +831,20 @@ def post_summary(p, limit=155):
     return plain[:limit].rsplit(" ", 1)[0] + "…"
 
 
-# Generated pages address everything from the site root: they live one folder
-# down, and root-relative paths spare every template a ../ that would have to
-# change the moment a page moves.
-BLOG_HEAD = """<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{title}</title>
-  <meta name="description" content="{desc}">
-  <link rel="canonical" href="{canonical}">
-  <meta name="robots" content="index, follow, max-image-preview:large">
-  <meta property="og:type" content="{og_type}">
-  <meta property="og:site_name" content="Naturally Artificial">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:url" content="{canonical}">
-  <meta property="og:title" content="{title}">
-  <meta property="og:description" content="{desc}">
-  <meta property="og:image" content="{image}">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{title}">
-  <meta name="twitter:description" content="{desc}">
-  <meta name="twitter:image" content="{image}">
-  <script type="application/ld+json">{jsonld}</script>
-  <link rel="icon" href="/assets/favicon/favicon.ico" sizes="32x32">
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon/favicon-512.png">
-  <link rel="apple-touch-icon" href="/assets/favicon/favicon-180.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/styles.css?v={v}">
-  <link rel="stylesheet" href="/css/blog.css?v={v}">
-</head>
-<body id="top" class="blog-page">
-
-  <header class="site-header site-header--dark">
-    <a class="site-header__logo" href="/" aria-label="Naturally Artificial — home">
-      <img src="/assets/logo.svg" alt="Naturally Artificial">
-    </a>
-    <nav class="site-header__nav" aria-label="Main navigation">
-      <a href="/about">About</a>
-      <a href="/show">Show</a>
-      <a href="/blog/"{blog_current}>Blog</a>
-      <a href="/about#speaking">Speaking</a>
-    </nav>
-    <a class="site-header__contact" href="/contact">Contact Sergey</a>
-    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
-  </header>
-
-  <main>
-"""
-
-BLOG_FOOT = """  </main>
-
-  <footer class="site-footer">
-    <div class="site-footer__inner">
-      <div class="site-footer__top">
-        <p class="site-footer__heading">Join the founder-to-founder<br>talks in AI era</p>
-        <a class="site-footer__book" href="{yt}" target="_blank" rel="noopener">Subscribe on YouTube</a>
-      </div>
-      <hr class="site-footer__divider">
-      <div class="site-footer__cols">
-        <div class="site-footer__col">
-          <p class="site-footer__col-title">Navigate</p>
-          <ul>
-            <li><a href="/show">About Naturally Artificial</a></li>
-            <li><a href="/about">About Sergey Osipov</a></li>
-            <li><a href="/blog/">Blog</a></li>
-            <li><a href="/contact">Contact</a></li>
-          </ul>
-        </div>
-        <div class="site-footer__col">
-          <p class="site-footer__col-title">Naturally Artificial</p>
-          <ul>
-            <li><a href="https://t.me/naturally_artificial" target="_blank" rel="noopener">Telegram</a></li>
-            <li><a href="{yt}" target="_blank" rel="noopener">YouTube</a></li>
-            <li><a href="https://open.spotify.com/show/033U1gDnjee2ValRcN3vWX" target="_blank" rel="noopener">Spotify</a></li>
-            <li><a href="https://www.linkedin.com/company/naturally-artificial/" target="_blank" rel="noopener">LinkedIn</a></li>
-            <li><a href="https://www.instagram.com/naturally__artificial/" target="_blank" rel="noopener">Instagram</a></li>
-          </ul>
-        </div>
-        <div class="site-footer__col">
-          <p class="site-footer__col-title">Sergey Osipov</p>
-          <ul>
-            <li><a href="https://www.linkedin.com/in/osipov/" target="_blank" rel="noopener">LinkedIn</a></li>
-            <li><a href="https://www.instagram.com/os_on_the_island/" target="_blank" rel="noopener">Instagram</a></li>
-          </ul>
-        </div>
-        <div class="site-footer__col site-footer__col--right">
-          <p class="site-footer__col-title">Links</p>
-          <ul>
-            <li><a href="/show#presskit">Press kit</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="site-footer__bottom">
-        <p>Copyright © Joox LTD</p>
-        <a class="back-to-top" href="#top">Back to top <img src="/assets/arrow-up.svg" alt=""></a>
-        <span class="site-footer__legal">
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/terms">Terms of Use</a>
-        </span>
-      </div>
-    </div>
-  </footer>
-
-  <script src="/js/main.js?v={v}"></script>
-</body>
-</html>
-"""
-
-
 def post_media_html(p, lazy=True):
     load = ' loading="lazy"' if lazy else ""
     if p.get("video_thumb"):
         badge = (
-            f'<span class="tg-post__duration">{html.escape(p["duration"])}</span>'
+            f'<span class="post__duration">{html.escape(p["duration"])}</span>'
             if p.get("duration")
             else ""
         )
         return (
-            f'<div class="tg-post__media tg-post__media--video">'
-            f'<img src="/{p["video_thumb"]}" alt=""{load}>'
-            f'<span class="tg-post__play" aria-hidden="true"></span>{badge}</div>'
+            f'<div class="post__media"><img src="/{p["video_thumb"]}" alt=""{load}>'
+            f'<span class="post__play" aria-hidden="true"></span>{badge}</div>'
         )
     if p.get("photo"):
-        return f'<div class="tg-post__media"><img src="/{p["photo"]}" alt=""{load}></div>'
+        return f'<div class="post__media"><img src="/{p["photo"]}" alt=""{load}></div>'
     return ""
 
 
@@ -756,65 +866,58 @@ def render_post_page(p, newer, older):
         "mainEntityOfPage": canonical,
         "inLanguage": "en",
         "image": image,
-        "author": {"@type": "Person", "name": "Sergey Osipov"},
-        "publisher": {
-            "@type": "Organization",
-            "name": "Naturally Artificial",
-            "url": f"{SITE_URL}/",
-        },
+        "author": {"@type": "Person", "name": "Sergey Osipov", "url": f"{SITE_URL}/about"},
+        "publisher": {"@type": "Organization", "name": "Naturally Artificial", "url": f"{SITE_URL}/"},
         "isPartOf": {"@type": "Blog", "@id": f"{SITE_URL}/blog/#blog"},
     }
     if iso:
         data["datePublished"] = iso
 
-    head = BLOG_HEAD.format(
-        title=html.escape(f"{title} — Naturally Artificial", quote=True),
-        desc=html.escape(desc, quote=True),
-        canonical=canonical,
-        og_type="article",
-        image=image,
-        jsonld=json.dumps(data, ensure_ascii=False, separators=(",", ":")),
-        v=ASSET_V,
-        blog_current=' class="active" aria-current="page"',
-    )
-
-    stamp = (
-        f'<time datetime="{iso}">{p["date"].strftime("%d %B %Y")}</time>'
-        if p.get("date")
-        else ""
-    )
-    views = (
-        f'<span class="post-views">{html.escape(p["views"])} views</span>'
-        if p.get("views")
-        else ""
-    )
+    stamp = f'<time datetime="{iso}">{p["date"].strftime("%d %B %Y")}</time>' if p.get("date") else ""
+    views = f'<span>{html.escape(p["views"])} views</span>' if p.get("views") else ""
 
     nav = []
     if older:
         nav.append(
-            f'<a class="post-nav__prev" href="/blog/{older["slug"]}">'
-            f'<span>Older</span>{html.escape(post_title(older, 48))}</a>'
+            f'<a class="post-nav__prev" href="/blog/{older["slug"]}.html">'
+            f'<span>Older</span>{html.escape(post_title(older, 52))}</a>'
         )
     if newer:
         nav.append(
-            f'<a class="post-nav__next" href="/blog/{newer["slug"]}">'
-            f'<span>Newer</span>{html.escape(post_title(newer, 48))}</a>'
+            f'<a class="post-nav__next" href="/blog/{newer["slug"]}.html">'
+            f'<span>Newer</span>{html.escape(post_title(newer, 52))}</a>'
         )
 
-    body = f"""    <article class="post container">
-      <p class="post__back"><a href="/blog/">All posts</a></p>
+    body = f"""    <article class="post">
+      <a class="back-link" href="/blog/">All posts</a>
       <h1 class="post__title">{html.escape(title)}</h1>
       <p class="post__meta">{stamp}{views}</p>
       {post_media_html(p, lazy=False)}
       <div class="post__text">{p.get("text", "")}</div>
-      <p class="post__source"><a href="{p['url']}" target="_blank" rel="noopener">Open in Telegram</a></p>
+      <p class="post__source"><a class="link-arrow" href="{p['url']}" target="_blank" rel="noopener">Open in Telegram</a></p>
     </article>
 
-    <nav class="post-nav container" aria-label="More posts">
+    <nav class="post-nav" aria-label="More posts">
       {"".join(nav)}
     </nav>
-"""
-    return head + body + BLOG_FOOT.format(yt=YT_HANDLE, v=ASSET_V)
+
+    <section class="section">
+      <div class="container">
+        <div class="band">
+          {shape("ipomoea")}
+          <h2 class="band__title display display--md">The conversations run longer on camera</h2>
+          <p class="band__text">These are the notes between episodes. The show itself is founders talking to founders, 30 to 60 minutes at a time.</p>
+          <p class="band__cta">
+            <a class="btn btn--dark" href="{YT_HANDLE}" target="_blank" rel="noopener">{PLAY_ICON}Watch on YouTube</a>
+            <a class="btn btn--ghost" href="{TELEGRAM}" target="_blank" rel="noopener">Follow on Telegram</a>
+          </p>
+        </div>
+      </div>
+    </section>"""
+    return page_shell(
+        f"{title} — Naturally Artificial", desc, body,
+        canonical=canonical, active="blog", og_type="article", image=image, jsonld=data,
+    )
 
 
 def render_blog_index(posts):
@@ -831,57 +934,58 @@ def render_blog_index(posts):
         "url": canonical,
         "description": desc,
         "inLanguage": "en",
-        "publisher": {
-            "@type": "Organization",
-            "name": "Naturally Artificial",
-            "url": f"{SITE_URL}/",
-        },
+        "publisher": {"@type": "Organization", "name": "Naturally Artificial", "url": f"{SITE_URL}/"},
     }
-    head = BLOG_HEAD.format(
-        title="Blog — Naturally Artificial",
-        desc=html.escape(desc, quote=True),
-        canonical=canonical,
-        og_type="website",
-        image=f"{SITE_URL}{OG_IMAGE}",
-        jsonld=json.dumps(data, ensure_ascii=False, separators=(",", ":")),
-        v=ASSET_V,
-        blog_current=' class="active" aria-current="page"',
-    )
 
-    # every entry is a real link in the markup — the batching below is for
-    # readers, never for crawlers
+    # every entry is a real link in the markup — the batching and the search
+    # are for readers, never for crawlers
     items = []
-    for i, p in enumerate(posts):
+    for p in posts:
         stamp = (
-            f'<time datetime="{p["date"].isoformat()}">{p["date"].strftime("%d %b %Y")}</time>'
+            f'<time class="blog-item__date" datetime="{p["date"].isoformat()}">{p["date"].strftime("%d %b %Y")}</time>'
             if p.get("date")
-            else ""
+            else '<span class="blog-item__date"></span>'
         )
-        hidden = " blog-item--hidden" if i >= 30 else ""
         items.append(
-            f'        <li class="blog-item{hidden}">\n'
-            f'          <a href="/blog/{p["slug"]}">\n'
-            f'            <h2 class="blog-item__title">{html.escape(post_title(p, 90))}</h2>\n'
-            f'            <p class="blog-item__excerpt">{html.escape(post_body_excerpt(p))}</p>\n'
+            f'        <li class="blog-item">\n'
+            f'          <a href="/blog/{p["slug"]}.html">\n'
+            f"            {stamp}\n"
+            f"            <div>\n"
+            f'              <h2 class="blog-item__title">{html.escape(post_title(p, 90))}</h2>\n'
+            f'              <p class="blog-item__excerpt">{html.escape(post_body_excerpt(p, 150))}</p>\n'
+            f"            </div>\n"
             f"          </a>\n"
-            f'          <p class="blog-item__meta">{stamp}</p>\n'
             f"        </li>"
         )
 
-    body = f"""    <section class="blog-head container">
-      <p class="blog-head__label">Blog</p>
-      <h1 class="blog-head__title">Everything from the channel</h1>
-      <p class="blog-head__sub">{html.escape(desc)}</p>
+    body = f"""    <section class="page-head">
+      {shape("aloe")}
+      <div class="container">
+        <p class="eyebrow">Blog</p>
+        <h1 class="page-head__title display display--xl">Notes between <em>episodes</em></h1>
+        <p class="lead">{html.escape(desc)}</p>
+      </div>
     </section>
 
-    <section class="blog-list container">
-      <ol class="blog-items" id="blog-items">
+    <section class="section section--flush-top">
+      <div class="container">
+        <div class="blog-tools">
+          <label class="blog-search">
+            <input id="blog-search" type="search" placeholder="Search {len(posts)} posts" aria-label="Search posts" autocomplete="off">
+          </label>
+          <p class="blog-count" id="blog-count" aria-live="polite">{len(posts)} posts</p>
+        </div>
+        <ol class="blog-items" id="blog-items">
 {chr(10).join(items)}
-      </ol>
-      <button class="blog-more" id="blog-more" type="button">Show more posts</button>
-    </section>
-"""
-    return head + body + BLOG_FOOT.format(yt=YT_HANDLE, v=ASSET_V)
+        </ol>
+        <p class="blog-empty" id="blog-empty" hidden>Nothing matches that. Try a shorter word.</p>
+        <button class="btn btn--ghost blog-more" id="blog-more" type="button" hidden>Show more posts</button>
+      </div>
+    </section>"""
+    return page_shell(
+        "Blog — Naturally Artificial", desc, body,
+        canonical=canonical, active="blog", jsonld=data,
+    )
 
 
 def render_home_posts(posts, count=5):
@@ -890,18 +994,16 @@ def render_home_posts(posts, count=5):
     out = []
     for p in posts[:count]:
         stamp = (
-            f'<time datetime="{p["date"].isoformat()}">{p["date"].strftime("%d %b %Y")}</time>'
+            f'<time class="post-card__date" datetime="{p["date"].isoformat()}">{p["date"].strftime("%d %b %Y")}</time>'
             if p.get("date")
             else ""
         )
         out.append(
-            f'        <li class="home-post">\n'
-            f'          <a href="blog/{p["slug"]}.html">\n'
-            f'            <h3 class="home-post__title">{html.escape(post_title(p, 90))}</h3>\n'
-            f'            <p class="home-post__excerpt">{html.escape(post_body_excerpt(p, 140))}</p>\n'
-            f"          </a>\n"
-            f'          <p class="home-post__meta">{stamp}</p>\n'
-            f"        </li>"
+            f'          <a class="post-card" href="/blog/{p["slug"]}.html">\n'
+            f"            {stamp}\n"
+            f'            <h3 class="post-card__title">{html.escape(post_title(p, 80))}</h3>\n'
+            f'            <p class="post-card__excerpt">{html.escape(post_body_excerpt(p, 120))}</p>\n'
+            f"          </a>"
         )
     return "\n".join(out)
 
@@ -980,9 +1082,8 @@ def show_stats(videos):
     }
 
 
-def render_stats(videos):
+def render_stats(videos, tg=""):
     show = show_stats(videos)
-    tg = telegram_subscribers()
     if not show:
         return ""
 
@@ -993,43 +1094,30 @@ def render_stats(videos):
     # The cadence is stated, not measured: it is the rhythm the show commits
     # to, and a rolling average would swing with every gap and double week.
     cards = [
-        (str(show["episodes"]), "long-form episodes"),
-        (show["mean"], "mean views per episode"),
-        ("1–2", "new episodes a month"),
+        (str(show["episodes"]), "long-form episodes", ""),
+        (show["mean"], "mean views per episode", " stat--accent"),
+        ("1–2", "new episodes a month", ""),
     ]
     if tg:
-        cards.append((tg, "Telegram subscribers"))
+        cards.append((tg, "Telegram subscribers", ""))
 
-    out = [
-        '        <div class="pk-stats">',
-    ]
-    for value, label in cards:
-        out.append('          <div class="pk-stat">')
-        out.append(f'            <p class="pk-stat__num">{html.escape(value)}</p>')
-        out.append(f'            <p class="pk-stat__label">{html.escape(label)}</p>')
+    out = ['        <div class="stats" data-reveal>']
+    for value, label, mod in cards:
+        out.append(f'          <div class="stat{mod}">')
+        out.append(f'            <p class="stat__num">{html.escape(value)}</p>')
+        out.append(f'            <p class="stat__label">{html.escape(label)}</p>')
         out.append("          </div>")
     out.append("        </div>")
     out.append(
-        '        <p class="pk-note">The channel only started running properly '
+        '        <p class="stats__note">The channel only started running properly '
         "in January 2025, so these are the numbers from its first months.</p>"
     )
     return "\n".join(out)
 
 
 # --------------------------------------------------------------------------
-# search engines and social cards
+# the hand-written pages: head, header and footer between markers
 # --------------------------------------------------------------------------
-
-OG_ALT = "Naturally Artificial — founder-to-founder talks in the AI era"
-
-SOCIAL = [
-    YT_HANDLE,
-    "https://t.me/naturally_artificial",
-    "https://open.spotify.com/show/033U1gDnjee2ValRcN3vWX",
-    "https://www.linkedin.com/in/osipov/",
-    "https://www.linkedin.com/company/naturally-artificial/",
-    "https://www.instagram.com/naturally__artificial/",
-]
 
 
 def page_meta(path):
@@ -1046,8 +1134,25 @@ def page_meta(path):
     return html.unescape(title.group(1).strip()), html.unescape(desc.group(1).strip())
 
 
-def structured_data(path, title, desc):
+def structured_data(path, desc):
     """schema.org JSON-LD, only where there is something real to describe."""
+    org = {
+        "@type": "Organization",
+        "@id": f"{SITE_URL}/#show",
+        "name": "Naturally Artificial",
+        "url": f"{SITE_URL}/",
+        "logo": f"{SITE_URL}/assets/na-logo-blue.svg",
+        "sameAs": SOCIAL_SHOW,
+        "founder": {"@id": f"{SITE_URL}/about#sergey"},
+    }
+    person = {
+        "@type": "Person",
+        "@id": f"{SITE_URL}/about#sergey",
+        "name": "Sergey Osipov",
+        "url": f"{SITE_URL}/about",
+        "jobTitle": "Founder, early-stage investor and host of Naturally Artificial",
+        "sameAs": SOCIAL_HOST,
+    }
     if path == "index.html":
         return {
             "@context": "https://schema.org",
@@ -1057,19 +1162,12 @@ def structured_data(path, title, desc):
                     "@id": f"{SITE_URL}/#website",
                     "url": f"{SITE_URL}/",
                     "name": "Naturally Artificial",
-                    "inLanguage": "en",
-                    "publisher": {"@id": f"{SITE_URL}/#person"},
-                },
-                {
-                    "@type": "Person",
-                    "@id": f"{SITE_URL}/#person",
-                    "name": "Sergey Osipov",
-                    "url": f"{SITE_URL}/",
-                    "jobTitle": "Founder and early-stage investor",
                     "description": desc,
-                    "image": f"{SITE_URL}{OG_IMAGE}",
-                    "sameAs": SOCIAL,
+                    "inLanguage": "en",
+                    "publisher": {"@id": f"{SITE_URL}/#show"},
                 },
+                org,
+                person,
             ],
         }
     if path == "show.html":
@@ -1083,51 +1181,23 @@ def structured_data(path, title, desc):
             "inLanguage": "en",
             "image": f"{SITE_URL}{OG_IMAGE}",
             "webFeed": YT_FEED,
-            "author": {"@type": "Person", "name": "Sergey Osipov"},
+            "author": {"@type": "Person", "name": "Sergey Osipov", "url": f"{SITE_URL}/about"},
+        }
+    if path == "about.html":
+        return {
+            "@context": "https://schema.org",
+            "@type": "ProfilePage",
+            "mainEntity": dict(person, description=desc),
         }
     return None
-
-
-def seo_block(path):
-    title, desc = page_meta(path)
-    url = SITE_URL + PAGE_PATHS[path]
-    t, d = html.escape(title, quote=True), html.escape(desc, quote=True)
-
-    tags = [
-        f'<link rel="canonical" href="{url}">',
-        '<meta name="robots" content="index, follow, max-image-preview:large">',
-        '<meta property="og:type" content="website">',
-        '<meta property="og:site_name" content="Naturally Artificial">',
-        '<meta property="og:locale" content="en_US">',
-        f'<meta property="og:url" content="{url}">',
-        f'<meta property="og:title" content="{t}">',
-        f'<meta property="og:description" content="{d}">',
-        f'<meta property="og:image" content="{SITE_URL}{OG_IMAGE}">',
-        '<meta property="og:image:width" content="1200">',
-        '<meta property="og:image:height" content="630">',
-        f'<meta property="og:image:alt" content="{OG_ALT}">',
-        '<meta name="twitter:card" content="summary_large_image">',
-        f'<meta name="twitter:title" content="{t}">',
-        f'<meta name="twitter:description" content="{d}">',
-        f'<meta name="twitter:image" content="{SITE_URL}{OG_IMAGE}">',
-    ]
-
-    data = structured_data(path, title, desc)
-    if data:
-        tags.append(
-            '<script type="application/ld+json">'
-            + json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-            + "</script>"
-        )
-    return "\n".join("  " + tag for tag in tags)
 
 
 def git_dates():
     """Last commit date per page, when the checkout can actually tell us.
 
-    Netlify clones shallow, and there every file looks as though it changed in
-    the one commit that exists — a sitemap claiming every page changed today,
-    on every single deploy, is worse than one with no dates at all. So when the
+    A shallow clone makes every file look as though it changed in the one
+    commit that exists — a sitemap claiming every page changed today, on
+    every single build, is worse than one with no dates at all. So when the
     clone is shallow we say nothing.
     """
     try:
@@ -1159,7 +1229,6 @@ def build_search_files(posts=None):
         f"Sitemap: {SITE_URL}/sitemap.xml\n",
         encoding="utf-8",
     )
-    print("  wrote robots.txt")
 
     dates = git_dates()
     lines = [
@@ -1194,22 +1263,11 @@ def build_search_files(posts=None):
 
     lines.append("</urlset>")
     (ROOT / "sitemap.xml").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"  wrote sitemap.xml ({len(PAGE_PATHS)} urls"
-          f"{'' if dates else ', no dates — shallow clone'})")
+    print(f"  wrote robots.txt and sitemap.xml"
+          f"{'' if dates else ' (no page dates — shallow clone)'}")
 
 
-def build_seo():
-    for page in PAGE_PATHS:
-        inject_between(page, "SEO", seo_block(page), indent="  ")
-    build_search_files()
-
-
-# --------------------------------------------------------------------------
-# writing
-# --------------------------------------------------------------------------
-
-
-def inject_between(path, marker, content, indent=""):
+def inject_between(path, marker, content, indent="  "):
     f = ROOT / path
     src = f.read_text(encoding="utf-8")
     start, end = f"<!-- {marker}:start -->", f"<!-- {marker}:end -->"
@@ -1223,64 +1281,100 @@ def inject_between(path, marker, content, indent=""):
 
 
 def inject(path, name, content):
-    f = ROOT / path
-    src = f.read_text(encoding="utf-8")
-    start, end = f"<!-- FEED:{name}:start -->", f"<!-- FEED:{name}:end -->"
-    pattern = re.compile(
-        re.escape(start) + r".*?" + re.escape(end), re.S
-    )
-    if not pattern.search(src):
-        sys.exit(f"marker FEED:{name} not found in {path}")
-    f.write_text(
-        pattern.sub(lambda _: f"{start}\n{content}\n        {end}", src),
-        encoding="utf-8",
-    )
+    inject_between(path, f"FEED:{name}", content, indent="        ")
     print(f"  wrote {name} → {path}")
 
 
+def build_pages():
+    """Head, header and footer for every hand-written page. No network."""
+    for page, path in PAGE_PATHS.items():
+        title, desc = page_meta(page)
+        inject_between(page, "HEAD", head_tags(
+            title, desc, SITE_URL + path, jsonld=structured_data(page, desc)))
+        inject_between(page, "CHROME:header", render_header(NAV_KEY.get(page)))
+        inject_between(page, "CHROME:footer", render_footer())
+    for page in UNLISTED:
+        title, desc = page_meta(page)
+        inject_between(page, "HEAD", head_tags(title, desc, None))
+        inject_between(page, "CHROME:header", render_header())
+        inject_between(page, "CHROME:footer", render_footer())
+    print(f"  {len(PAGE_PATHS) + len(UNLISTED)} pages")
+
+
+# --------------------------------------------------------------------------
+# the last fetch, kept so the pages can be re-rendered without the network
+# --------------------------------------------------------------------------
+
+
+def save_cache(videos, posts, tg):
+    def enc(items):
+        return [dict(i, date=i["date"].isoformat() if i.get("date") else None) for i in items]
+
+    CACHE.parent.mkdir(exist_ok=True)
+    CACHE.write_text(
+        json.dumps({"videos": enc(videos), "posts": enc(posts), "tg": tg}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+
+def load_cache():
+    def dec(items):
+        return [dict(i, date=datetime.fromisoformat(i["date"]) if i.get("date") else None) for i in items]
+
+    try:
+        data = json.loads(CACHE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        sys.exit("--offline needs a previous full run: no .cache/feeds.json yet")
+    return dec(data["videos"]), dec(data["posts"]), data.get("tg", "")
+
+
 def main():
+    offline = "--offline" in sys.argv
+
     # First, because it needs no network: a feed outage must not cost the
-    # site its canonical links or its sitemap.
-    print("Search metadata…")
-    build_seo()
+    # site its navigation, its canonical links or its sitemap.
+    print("Pages…")
+    build_pages()
 
-    print("YouTube…")
-    videos, all_videos = fetch_youtube()
-    print(f"  {len(videos)} videos")
+    if offline:
+        all_videos, posts, tg = load_cache()
+        tg_complete = True
+        print(f"  from cache: {len(all_videos)} videos, {len(posts)} posts")
+    else:
+        print("YouTube…")
+        _, all_videos = fetch_youtube()
+        print("Telegram…")
+        posts, tg_complete = fetch_telegram()
+        print(f"  {len(posts)} posts{'' if tg_complete else ' (incomplete — keeping the committed blog)'}")
+        tg = telegram_subscribers()
+        if all_videos and posts and tg_complete:
+            save_cache(all_videos, posts, tg)
 
-    print("Telegram…")
-    posts, tg_complete = fetch_telegram()
-    print(f"  {len(posts)} posts{'' if tg_complete else ' (incomplete — keeping the committed feed)'}")
-
+    videos = [v for v in all_videos if v["date"] >= YT_MIN_DATE]
+    print(f"  {len(videos)} episodes")
     if not videos and not posts:
-        sys.exit("nothing fetched — leaving pages untouched")
+        sys.exit("nothing fetched — leaving the feeds untouched")
 
     if videos:
-        inject(
-            "index.html",
-            "episodes",
-            "\n".join(render_episode(v) for v in videos[:3]),
-        )
-        inject(
-            "show.html",
-            "episodes",
-            "\n".join(render_episode(v) for v in videos),
-        )
+        inject("index.html", "featured", render_feature(videos[0]))
+        inject("index.html", "episodes", "\n".join(render_episode(v) for v in videos[1:7]))
+        inject("show.html", "episodes", "\n".join(render_episode(v) for v in videos))
+        inject("guests.html", "episodes", "\n".join(render_episode(v) for v in videos[:6]))
 
-    if all_videos:
-        print("Press kit numbers…")
-        stats = render_stats(all_videos)
-        if stats:
-            inject("show.html", "stats", stats)
-        else:
-            print("  incomplete — keeping the committed numbers")
+    stats = render_stats(all_videos, tg) if all_videos else ""
+    if stats:
+        for page in ("index.html", "show.html", "sponsors.html"):
+            inject(page, "stats", stats)
+    else:
+        print("  numbers incomplete — keeping the committed ones")
 
     if posts and tg_complete:
         print("Blog…")
         ordered = build_blog(assign_slugs(posts))
         build_search_files(posts)
         inject("index.html", "home-posts", render_home_posts(ordered))
-
+    else:
+        build_search_files()
 
     print("done")
 

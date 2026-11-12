@@ -1,0 +1,47 @@
+# Rebuilds the site once a day and commits what changed.
+#
+# Nothing used to do this: the site only updated when someone pushed, and it
+# sat three months behind the channel before anyone noticed. Running here
+# rather than in Netlify's build matters, because only a commit makes the
+# result permanent — a post's address and its images are fixed the first time
+# they are seen, and that record has to live in the repository.
+name: Refresh the site
+
+on:
+  schedule:
+    - cron: "17 5 * * *"   # daily, early morning in Europe
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history, so the sitemap can date each page
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build
+        run: python3 build.py
+        env:
+          BUILD_BUDGET: "900"
+      - name: Commit what changed
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Nothing new."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Daily refresh: episodes, posts and numbers"
+          git push

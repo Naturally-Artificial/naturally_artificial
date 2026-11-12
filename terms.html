@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Terms of Use — Naturally Artificial</title>
   <meta name="description" content="The rules for using this site: what it is, what it isn't, and what you may do with what's on it.">
-  <!-- SEO:start -->
+  <!-- HEAD:start -->
   <link rel="canonical" href="https://naturallyartif.netlify.app/terms">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta property="og:type" content="website">
@@ -15,51 +15,54 @@
   <meta property="og:title" content="Terms of Use — Naturally Artificial">
   <meta property="og:description" content="The rules for using this site: what it is, what it isn&#x27;t, and what you may do with what&#x27;s on it.">
   <meta property="og:image" content="https://naturallyartif.netlify.app/assets/og-image.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Naturally Artificial — founder-to-founder talks in the AI era">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Terms of Use — Naturally Artificial">
   <meta name="twitter:description" content="The rules for using this site: what it is, what it isn&#x27;t, and what you may do with what&#x27;s on it.">
   <meta name="twitter:image" content="https://naturallyartif.netlify.app/assets/og-image.jpg">
-  <!-- SEO:end -->
-  <link rel="icon" href="assets/favicon/favicon.ico" sizes="32x32">
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon/favicon-48.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="assets/favicon/favicon-512.png">
-  <link rel="apple-touch-icon" href="assets/favicon/favicon-180.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=46">
-  <link rel="stylesheet" href="css/legal.css?v=46">
+  <meta name="theme-color" content="#101010">
+  <link rel="icon" href="/assets/favicon/favicon.ico" sizes="32x32">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon/favicon-512.png">
+  <link rel="apple-touch-icon" href="/assets/favicon/favicon-180.png">
+  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/boldonse-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/site.css?v=50">
+  <script>document.documentElement.classList.add('js')</script>
+  <!-- HEAD:end -->
 </head>
-<body id="top" class="legal-page">
-
-  <header class="site-header site-header--dark">
-    <a class="site-header__logo" href="index.html" aria-label="Naturally Artificial — home">
-      <img src="assets/logo.svg" alt="Naturally Artificial">
-    </a>
-    <nav class="site-header__nav" aria-label="Main navigation">
-      <a href="about.html">About</a>
-      <a href="show.html">Show</a>
-      <a href="blog/">Blog</a>
-      <a href="about.html#speaking">Speaking</a>
-    </nav>
-    <a class="site-header__contact" href="contact.html">Contact Sergey</a>
-    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+<body>
+  <!-- CHROME:header:start -->
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header" data-header>
+    <div class="site-header__inner">
+      <a class="site-header__logo" href="/" aria-label="Naturally Artificial — home">
+        <img src="/assets/logo.svg" alt="Naturally Artificial" width="100" height="49">
+      </a>
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+        <a class="site-nav__link" href="/show.html">Show</a>
+        <a class="site-nav__link" href="/blog/">Blog</a>
+        <a class="site-nav__link" href="/about.html">Host</a>
+        <a class="site-nav__link" href="/sponsors.html">For sponsors</a>
+        <a class="btn btn--primary btn--sm" href="/guests.html">Be a guest</a>
+      </nav>
+      <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Open menu"><span></span><span></span></button>
+    </div>
   </header>
+  <!-- CHROME:header:end -->
 
-  <main>
-    <section class="legal-head container">
-      <p class="legal-head__label">Legal</p>
-      <h1 class="legal-head__title">Terms of Use</h1>
-      <p class="legal-head__date">Last updated 29 July 2026</p>
+  <main id="main">
+    <section class="page-head">
+      <div class="container">
+        <p class="eyebrow">Legal</p>
+        <h1 class="page-head__title display display--lg">Terms of Use</h1>
+        <p class="lead">Last updated 12 November 2026</p>
+      </div>
     </section>
 
-    <section class="legal-body container">
-      <div class="legal-body__inner">
+    <section class="section section--flush-top">
+      <div class="container">
+        <div class="prose">
 
         <h2>Who runs this site</h2>
         <p>This site belongs to <strong>Joox LTD</strong>, a company registered in the British Virgin Islands. By using it you agree to what follows. If you don't, please don't use it.</p>
@@ -90,64 +93,69 @@
 
         <h2>Which law applies</h2>
         <p>These terms are governed by the law of the British Virgin Islands, and any dispute belongs to the courts there.</p>
-
+        </div>
       </div>
     </section>
   </main>
 
-  <!-- ================= Footer ================= -->
+  <!-- CHROME:footer:start -->
   <footer class="site-footer">
-    <div class="site-footer__inner">
-      <div class="site-footer__top">
-        <p class="site-footer__heading">Join the founder-to-founder<br>talks in AI era</p>
-        <a class="site-footer__book" href="https://www.youtube.com/@Naturally_Artificial" target="_blank" rel="noopener">Subscribe on YouTube</a>
+    <div class="container">
+      <div class="site-footer__cta">
+        <span class="shape-wrap" aria-hidden="true"><svg class="shape" focusable="false"><use href="/assets/shapes/sprite.svg#cornflower"/></svg></span>
+        <p class="display display--lg">Join the founder-to-founder talks in the <em>AI era</em></p>
+        <a class="btn btn--primary" href="https://www.youtube.com/@Naturally_Artificial" target="_blank" rel="noopener"><svg class="btn__icon" viewBox="0 0 12 14" aria-hidden="true" focusable="false"><path d="M12 7 0 14V0z"/></svg>Subscribe on YouTube</a>
       </div>
-      <hr class="site-footer__divider">
       <div class="site-footer__cols">
-        <div class="site-footer__col">
-          <p class="site-footer__col-title">Navigate</p>
+        <div>
+          <p class="site-footer__h">The show</p>
           <ul>
-            <li><a href="show.html">About Naturally Artificial</a></li>
-            <li><a href="about.html">About Sergey Osipov</a></li>
-            <li><a href="blog/">Blog</a></li>
-            <li><a href="contact.html">Contact</a></li>
+            <li><a href="/show.html">About Naturally Artificial</a></li>
+            <li><a href="/show.html#episodes">Episodes</a></li>
+            <li><a href="/blog/">Blog</a></li>
+            <li><a href="/about.html">About Sergey Osipov</a></li>
           </ul>
         </div>
-        <div class="site-footer__col">
-          <p class="site-footer__col-title">Naturally Artificial</p>
+        <div>
+          <p class="site-footer__h">Work with us</p>
           <ul>
-            <li><a href="https://t.me/naturally_artificial" target="_blank" rel="noopener">Telegram</a></li>
+            <li><a href="/sponsors.html">For sponsors</a></li>
+            <li><a href="/guests.html">Be a guest</a></li>
+            <li><a href="/show.html#presskit">Press kit</a></li>
+            <li><a href="/contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="site-footer__h">Naturally Artificial</p>
+          <ul>
             <li><a href="https://www.youtube.com/@Naturally_Artificial" target="_blank" rel="noopener">YouTube</a></li>
             <li><a href="https://open.spotify.com/show/033U1gDnjee2ValRcN3vWX" target="_blank" rel="noopener">Spotify</a></li>
+            <li><a href="https://t.me/naturally_artificial" target="_blank" rel="noopener">Telegram</a></li>
             <li><a href="https://www.linkedin.com/company/naturally-artificial/" target="_blank" rel="noopener">LinkedIn</a></li>
             <li><a href="https://www.instagram.com/naturally__artificial/" target="_blank" rel="noopener">Instagram</a></li>
           </ul>
         </div>
-        <div class="site-footer__col">
-          <p class="site-footer__col-title">Sergey Osipov</p>
+        <div>
+          <p class="site-footer__h">Sergey Osipov</p>
           <ul>
             <li><a href="https://www.linkedin.com/in/osipov/" target="_blank" rel="noopener">LinkedIn</a></li>
             <li><a href="https://www.instagram.com/os_on_the_island/" target="_blank" rel="noopener">Instagram</a></li>
           </ul>
         </div>
-        <div class="site-footer__col site-footer__col--right">
-          <p class="site-footer__col-title">Links</p>
-          <ul>
-            <li><a href="show.html#presskit">Press kit</a></li>
-          </ul>
-        </div>
       </div>
       <div class="site-footer__bottom">
+        <a class="site-footer__logo" href="/" aria-label="Naturally Artificial by Sergey Osipov — home">
+          <img src="/assets/na-logo-white.svg" alt="Naturally Artificial by Sergey Osipov" width="347" height="225" loading="lazy">
+        </a>
         <p>Copyright © Joox LTD</p>
-        <a class="back-to-top" href="#top">Back to top <img src="assets/arrow-up.svg" alt=""></a>
-        <span class="site-footer__legal">
-          <a href="privacy.html">Privacy Policy</a>
-          <a href="terms.html" aria-current="page">Terms of Use</a>
-        </span>
+        <p class="site-footer__legal">
+          <a href="/privacy.html">Privacy Policy</a>
+          <a href="/terms.html">Terms of Use</a>
+        </p>
       </div>
     </div>
   </footer>
-
-  <script src="js/main.js?v=46"></script>
+  <script src="/js/main.js?v=50" defer></script>
+  <!-- CHROME:footer:end -->
 </body>
 </html>
