@@ -44,7 +44,7 @@ def out_of_time():
 # The site's own address. Change this one line when a custom domain lands —
 # the canonical links, the social cards, robots.txt and the sitemap are all
 # regenerated from it. No trailing slash.
-SITE_URL = "https://naturallyartif.netlify.app"
+SITE_URL = "https://naturally-artificial.netlify.app"
 
 # Netlify serves these without the .html, and that extensionless form is the
 # one that must appear in canonical links and the sitemap; otherwise search
