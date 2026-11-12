@@ -82,7 +82,7 @@ OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
 # Cache-busting suffix for the stylesheet and the script. Every page gets its
 # links from here, so bumping this one number is the whole job.
-ASSET_V = 50
+ASSET_V = 52
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
@@ -1363,7 +1363,7 @@ def main():
 
     stats = render_stats(all_videos, tg) if all_videos else ""
     if stats:
-        for page in ("index.html", "show.html", "sponsors.html"):
+        for page in ("show.html", "sponsors.html"):
             inject(page, "stats", stats)
     else:
         print("  numbers incomplete — keeping the committed ones")

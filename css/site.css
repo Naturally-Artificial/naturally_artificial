@@ -1192,14 +1192,12 @@ button {
   align-items: center;
 }
 
-.portrait-card {
-  overflow: hidden;
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-}
-
+/* no card behind it: the backdrop is keyed out with a mask, so the figure
+   stands straight on the page with the shape showing through */
 .portrait-card img {
   width: 100%;
+  -webkit-mask: url("/assets/img/host-illustrated-mask.png") center / 100% 100% no-repeat;
+  mask: url("/assets/img/host-illustrated-mask.png") center / 100% 100% no-repeat;
 }
 
 /* ---------- Fact tiles, lists, steps ---------- */
