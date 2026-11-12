@@ -55,6 +55,7 @@ PAGE_PATHS = {
     "sponsors.html": "/sponsors",
     "guests.html": "/guests",
     "about.html": "/about",
+    "presskit.html": "/presskit",
     "contact.html": "/contact",
     "privacy.html": "/privacy",
     "terms.html": "/terms",
@@ -367,7 +368,7 @@ def render_footer():
           <ul>
             <li><a href="/sponsors.html">For sponsors</a></li>
             <li><a href="/guests.html">Be a guest</a></li>
-            <li><a href="/show.html#presskit">Press kit</a></li>
+            <li><a href="/presskit.html">Press kit</a></li>
             <li><a href="/contact.html">Contact</a></li>
           </ul>
         </div>
@@ -1417,7 +1418,7 @@ def main():
 
     stats = render_stats(all_videos, tg) if all_videos else ""
     if stats:
-        for page in ("show.html", "sponsors.html"):
+        for page in ("show.html", "sponsors.html", "presskit.html"):
             inject(page, "stats", stats)
     else:
         print("  numbers incomplete — keeping the committed ones")

@@ -42,15 +42,6 @@
   status = 301
   force = true
 
-# The press kit is a section of the show page now, not a page of its own.
-# No fragment in the target: Netlify's redirect engine rejects one and answers
-# 500, and a fragment could not survive a server-side redirect anyway.
-[[redirects]]
-  from = "/presskit"
-  to = "/show"
-  status = 301
-  force = true
-
 # Speaking is a section of Sergey's page now.
 [[redirects]]
   from = "/speaking"
