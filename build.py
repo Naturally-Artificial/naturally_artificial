@@ -606,6 +606,11 @@ def parse_posts(page_html):
         photo = bg_url(b, "tgme_widget_message_photo_wrap")
         video_thumb = bg_url(b, "tgme_widget_message_video_thumb")
 
+        video = ""
+        vm = re.search(r'<video[^>]+src="([^"]+)"', b)
+        if vm:
+            video = html.unescape(vm.group(1))
+
         duration = ""
         dm = re.search(r'js-message_video_duration">([^<]+)<', b)
         if dm:
@@ -628,6 +633,7 @@ def parse_posts(page_html):
                 "text": text,
                 "photo": photo,
                 "video_thumb": video_thumb,
+                "video": video,
                 "duration": duration,
                 "date": dt,
                 "views": vm2.group(1).strip() if vm2 else "",
@@ -675,10 +681,48 @@ def archive_media(pid, url, suffix=""):
     return rel
 
 
+# Telegram's public page only carries videos small enough to stream, a few
+# megabytes each. The cap is a guard against the odd large one bloating the
+# repository; a post over it keeps its poster and its link to Telegram.
+VIDEO_MAX_BYTES = 15 * 1024 * 1024
+
+
+def archive_video(pid, url):
+    """The video itself, kept for the same reason as the images: the address
+    Telegram hands out expires, and a permanent page cannot point at it."""
+    if not url:
+        return ""
+    dest = TG_MEDIA_DIR / f"{pid}.mp4"
+    rel = f"assets/tg/{pid}.mp4"
+    if dest.exists():
+        return rel
+    if out_of_time():
+        return ""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            if int(resp.headers.get("Content-Length") or 0) > VIDEO_MAX_BYTES:
+                return ""
+            data = resp.read(VIDEO_MAX_BYTES + 1)
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
+        print(f"  video {pid}: {exc}")
+        return ""
+    # an MP4 announces itself with "ftyp" a few bytes in; anything else is an
+    # error page or a truncated download
+    if len(data) > VIDEO_MAX_BYTES or data[4:8] != b"ftyp":
+        return ""
+    TG_MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(data)
+    return rel
+
+
 def archive_all_media(posts):
     """Localise every post's media, reporting how much was newly fetched."""
     fetched = 0
     for p in posts:
+        # every video, poster or not: some arrive without one, and left alone
+        # they would keep the expiring address they came with
+        p["video"] = archive_video(p["id"], p.get("video", ""))
         if p["video_thumb"]:
             before = (TG_MEDIA_DIR / f"{p['id']}-v.jpg").exists()
             p["video_thumb"] = archive_media(p["id"], p["video_thumb"], "-v")
@@ -833,6 +877,16 @@ def post_summary(p, limit=155):
 
 def post_media_html(p, lazy=True):
     load = ' loading="lazy"' if lazy else ""
+    if p.get("video"):
+        # preload="none": the poster is shown and not a byte of video is
+        # fetched until the visitor presses play
+        poster = f' poster="/{p["video_thumb"]}"' if p.get("video_thumb") else ""
+        # without a poster the first frame has to stand in for one
+        preload = "none" if poster else "metadata"
+        return (
+            f'<div class="post__media"><video controls playsinline preload="{preload}"'
+            f'{poster} src="/{p["video"]}"></video></div>'
+        )
     if p.get("video_thumb"):
         badge = (
             f'<span class="post__duration">{html.escape(p["duration"])}</span>'

@@ -1657,8 +1657,16 @@ button {
   background: var(--surface);
 }
 
-.post__media img {
+.post__media img,
+.post__media video {
+  display: block;
   width: 100%;
+}
+
+/* many of these are vertical; without a ceiling one would fill three screens */
+.post__media video {
+  max-height: 78vh;
+  background: #000;
 }
 
 /* a video post shows its poster with a play badge; the video itself stays on
