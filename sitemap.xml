@@ -2,22 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://naturally-artificial.netlify.app/</loc>
-    <lastmod>2026-11-18</lastmod>
+    <lastmod>2026-11-19</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://naturally-artificial.netlify.app/show</loc>
-    <lastmod>2026-11-18</lastmod>
+    <lastmod>2026-11-19</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://naturally-artificial.netlify.app/sponsors</loc>
-    <lastmod>2026-11-18</lastmod>
+    <lastmod>2026-11-19</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://naturally-artificial.netlify.app/guests</loc>
-    <lastmod>2026-11-18</lastmod>
+    <lastmod>2026-11-19</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
@@ -27,7 +27,7 @@
   </url>
   <url>
     <loc>https://naturally-artificial.netlify.app/presskit</loc>
-    <lastmod>2026-11-18</lastmod>
+    <lastmod>2026-11-19</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
@@ -48,6 +48,11 @@
   <url>
     <loc>https://naturally-artificial.netlify.app/blog/</loc>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://naturally-artificial.netlify.app/blog/by-the-way-folks-placy-s-first-ad-is-out-38-seconds-to-get</loc>
+    <lastmod>2026-11-20</lastmod>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://naturally-artificial.netlify.app/blog/folks-an-update-from-placy-a-2-5-year-old-proptech-startup</loc>
