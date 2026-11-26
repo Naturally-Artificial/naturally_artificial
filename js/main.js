@@ -51,7 +51,7 @@ function showConsentBanner() {
   bar.setAttribute("role", "dialog");
   bar.setAttribute("aria-label", "Cookies");
   bar.innerHTML = `
-    <p class="consent__text">We'd like to count visits to see which pages people actually read. That's all analytics cookies are used for here — nothing personal, nothing sold. <a href="/privacy.html">How we handle data</a></p>
+    <p class="consent__text">We'd like to count visits to see which pages people actually read. That's all analytics cookies are used for here — nothing personal, nothing sold. <a href="/privacy">How we handle data</a></p>
     <div class="consent__actions">
       <button class="btn btn--ghost btn--sm" type="button" data-consent="denied">Decline</button>
       <button class="btn btn--primary btn--sm" type="button" data-consent="granted">Accept</button>

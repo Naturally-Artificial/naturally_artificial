@@ -83,7 +83,7 @@ OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
 # Cache-busting suffix for the stylesheet and the script. Every page gets its
 # links from here, so bumping this one number is the whole job.
-ASSET_V = 55
+ASSET_V = 56
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
@@ -305,10 +305,10 @@ SPOTIFY = "https://open.spotify.com/show/033U1gDnjee2ValRcN3vWX"
 TELEGRAM = f"https://t.me/{TG_CHANNEL}"
 
 NAV = [
-    ("show", "/show.html", "Show"),
+    ("show", "/show", "Show"),
     ("blog", "/blog/", "Blog"),
-    ("about", "/about.html", "Host"),
-    ("sponsors", "/sponsors.html", "For sponsors"),
+    ("about", "/about", "Host"),
+    ("sponsors", "/sponsors", "For sponsors"),
 ]
 
 PLAY_ICON = '<svg class="btn__icon" viewBox="0 0 12 14" aria-hidden="true" focusable="false"><path d="M12 7 0 14V0z"/></svg>'
@@ -338,7 +338,7 @@ def render_header(active=None):
       </a>
       <nav class="site-nav" id="site-nav" aria-label="Main">
 {links}
-        <a class="btn btn--primary btn--sm" href="/guests.html"{cur("guests")}>Be a guest</a>
+        <a class="btn btn--primary btn--sm" href="/guests"{cur("guests")}>Be a guest</a>
       </nav>
       <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Open menu"><span></span><span></span></button>
     </div>
@@ -357,19 +357,19 @@ def render_footer():
         <div>
           <p class="site-footer__h">The show</p>
           <ul>
-            <li><a href="/show.html">About Naturally Artificial</a></li>
-            <li><a href="/show.html#episodes">Episodes</a></li>
+            <li><a href="/show">About Naturally Artificial</a></li>
+            <li><a href="/show#episodes">Episodes</a></li>
             <li><a href="/blog/">Blog</a></li>
-            <li><a href="/about.html">About Sergey Osipov</a></li>
+            <li><a href="/about">About Sergey Osipov</a></li>
           </ul>
         </div>
         <div>
           <p class="site-footer__h">Work with us</p>
           <ul>
-            <li><a href="/sponsors.html">For sponsors</a></li>
-            <li><a href="/guests.html">Be a guest</a></li>
-            <li><a href="/presskit.html">Press kit</a></li>
-            <li><a href="/contact.html">Contact</a></li>
+            <li><a href="/sponsors">For sponsors</a></li>
+            <li><a href="/guests">Be a guest</a></li>
+            <li><a href="/presskit">Press kit</a></li>
+            <li><a href="/contact">Contact</a></li>
           </ul>
         </div>
         <div>
@@ -396,8 +396,8 @@ def render_footer():
         </a>
         <p>Copyright © Joox LTD</p>
         <p class="site-footer__legal">
-          <a href="/privacy.html">Privacy Policy</a>
-          <a href="/terms.html">Terms of Use</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Use</a>
         </p>
       </div>
     </div>
@@ -927,6 +927,20 @@ def render_post_page(p, newer, older):
     }
     if iso:
         data["datePublished"] = iso
+    data = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {k: v for k, v in data.items() if k != "@context"},
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Naturally Artificial", "item": f"{SITE_URL}/"},
+                    {"@type": "ListItem", "position": 2, "name": "Blog", "item": f"{SITE_URL}/blog/"},
+                    {"@type": "ListItem", "position": 3, "name": title, "item": canonical},
+                ],
+            },
+        ],
+    }
 
     stamp = f'<time datetime="{iso}">{p["date"].strftime("%d %B %Y")}</time>' if p.get("date") else ""
     views = f'<span>{html.escape(p["views"])} views</span>' if p.get("views") else ""
@@ -934,12 +948,12 @@ def render_post_page(p, newer, older):
     nav = []
     if older:
         nav.append(
-            f'<a class="post-nav__prev" href="/blog/{older["slug"]}.html">'
+            f'<a class="post-nav__prev" href="/blog/{older["slug"]}">'
             f'<span>Older</span>{html.escape(post_title(older, 52))}</a>'
         )
     if newer:
         nav.append(
-            f'<a class="post-nav__next" href="/blog/{newer["slug"]}.html">'
+            f'<a class="post-nav__next" href="/blog/{newer["slug"]}">'
             f'<span>Newer</span>{html.escape(post_title(newer, 52))}</a>'
         )
 
@@ -1003,7 +1017,7 @@ def render_blog_index(posts):
         )
         items.append(
             f'        <li class="blog-item">\n'
-            f'          <a href="/blog/{p["slug"]}.html">\n'
+            f'          <a href="/blog/{p["slug"]}">\n'
             f"            {stamp}\n"
             f"            <div>\n"
             f'              <h2 class="blog-item__title">{html.escape(post_title(p, 90))}</h2>\n'
@@ -1054,7 +1068,7 @@ def render_home_posts(posts, count=5):
             else ""
         )
         out.append(
-            f'          <a class="post-card" href="/blog/{p["slug"]}.html">\n'
+            f'          <a class="post-card" href="/blog/{p["slug"]}">\n'
             f"            {stamp}\n"
             f'            <h3 class="post-card__title">{html.escape(post_title(p, 80))}</h3>\n'
             f'            <p class="post-card__excerpt">{html.escape(post_body_excerpt(p, 120))}</p>\n'
@@ -1208,6 +1222,78 @@ def page_meta(path):
     return html.unescape(title.group(1).strip()), html.unescape(desc.group(1).strip())
 
 
+# Questions people — and the assistants they ask — put about the show. Shown
+# on the show page and repeated in its FAQPage data, from this one list.
+FAQ = [
+    ("What is Naturally Artificial?",
+     "A long-form video show of founder-to-founder talks in the AI era. Host Sergey Osipov "
+     "talks with founders, operators and investors about what AI is actually changing in the way "
+     "companies are built, financed and run"),
+    ("Who hosts the show?",
+     'Sergey Osipov, a founder turned investor. He spent thirty years building companies of his own, '
+     'one of which became a unicorn, and now invests through Joox VC and Zubr Capital. '
+     'More on <a href="/about">his page</a>'),
+    ("Where can I watch or listen?",
+     f'On <a href="{YT_HANDLE}">YouTube</a> and <a href="{SPOTIFY}">Spotify</a>. '
+     f'The notes between episodes go to <a href="{TELEGRAM}">Telegram</a> and to <a href="/blog/">the blog</a>'),
+    ("How often do new episodes come out?",
+     "One or two a month. Each runs 30 to 60 minutes"),
+    ("What language is the show in?",
+     "Mostly English. Some episodes are in Russian, with English subtitles or English dubbing"),
+    ("How can I become a guest?",
+     'Suggest yourself or someone else through <a href="/contact?topic=guest">the contact form</a>. '
+     'What the show looks for is on <a href="/guests">the guest page</a>'),
+    ("How can a company sponsor the show?",
+     'Through sponsorship of the show, an info-partnership or a joint format. '
+     'The options and the audience are on <a href="/sponsors">the sponsor page</a>'),
+    ("Where are the logo and press materials?",
+     'In <a href="/presskit">the press kit</a>: the show in a paragraph, current numbers, the host\'s bio, '
+     'the logo and the brand guide'),
+]
+
+
+def render_faq():
+    out = ['        <div class="rows faq" data-reveal>']
+    for q, a in FAQ:
+        out.append(f'          <div class="row"><h3 class="row__key">{html.escape(q)}</h3><p class="row__val">{a}</p></div>')
+    out.append("        </div>")
+    return "\n".join(out)
+
+
+def episodes_jsonld(videos):
+    """The episodes as VideoObjects, so search can show them as videos and
+    an assistant can name them with their dates."""
+    items = []
+    for i, v in enumerate(videos, 1):
+        obj = {
+            "@type": "VideoObject",
+            "name": v["title"],
+            "description": v.get("summary") or v["title"],
+            "thumbnailUrl": v["thumb"],
+            "uploadDate": v["date"].isoformat(),
+            "contentUrl": v["url"],
+            "embedUrl": f"https://www.youtube-nocookie.com/embed/{v['id']}",
+            "inLanguage": "ru" if lang_attr(v["title"]) else "en",
+            "partOfSeries": {"@id": f"{SITE_URL}/show#podcast"},
+        }
+        if v.get("views_n"):
+            obj["interactionStatistic"] = {
+                "@type": "InteractionCounter",
+                "interactionType": {"@type": "WatchAction"},
+                "userInteractionCount": int(str(v["views_n"]).replace(",", "")),
+            }
+        items.append({"@type": "ListItem", "position": i, "item": obj})
+    data = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "@id": f"{SITE_URL}/show#episodes",
+        "name": "Naturally Artificial episodes",
+        "itemListElement": items,
+    }
+    return ('        <script type="application/ld+json">'
+            + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "</script>")
+
+
 def structured_data(path, desc):
     """schema.org JSON-LD, only where there is something real to describe."""
     org = {
@@ -1225,6 +1311,11 @@ def structured_data(path, desc):
         "name": "Sergey Osipov",
         "url": f"{SITE_URL}/about",
         "jobTitle": "Founder, investor and host of Naturally Artificial",
+        "image": f"{SITE_URL}/assets/img/host.jpg",
+        "knowsAbout": [
+            "Artificial intelligence in business", "Startups", "Venture capital",
+            "AI roll-ups", "PropTech", "Classifieds", "Video game marketing",
+        ],
         "sameAs": SOCIAL_HOST,
     }
     if path == "index.html":
@@ -1245,8 +1336,7 @@ def structured_data(path, desc):
             ],
         }
     if path == "show.html":
-        return {
-            "@context": "https://schema.org",
+        series = {
             "@type": "PodcastSeries",
             "@id": f"{SITE_URL}/show#podcast",
             "name": "Naturally Artificial",
@@ -1255,8 +1345,19 @@ def structured_data(path, desc):
             "inLanguage": "en",
             "image": f"{SITE_URL}{OG_IMAGE}",
             "webFeed": YT_FEED,
-            "author": {"@type": "Person", "name": "Sergey Osipov", "url": f"{SITE_URL}/about"},
+            "author": {"@id": f"{SITE_URL}/about#sergey"},
+            "sameAs": SOCIAL_SHOW,
         }
+        faq = {
+            "@type": "FAQPage",
+            "@id": f"{SITE_URL}/show#faq",
+            "mainEntity": [
+                {"@type": "Question", "name": q,
+                 "acceptedAnswer": {"@type": "Answer", "text": re.sub(r"<[^>]+>", "", a)}}
+                for q, a in FAQ
+            ],
+        }
+        return {"@context": "https://schema.org", "@graph": [series, faq, person]}
     if path == "about.html":
         return {
             "@context": "https://schema.org",
@@ -1294,15 +1395,94 @@ def git_dates():
         return {}
 
 
-def build_search_files(posts=None):
-    (ROOT / "robots.txt").write_text(
-        "# Everything here is meant to be found.\n"
-        "User-agent: *\n"
-        "Allow: /\n"
-        "\n"
-        f"Sitemap: {SITE_URL}/sitemap.xml\n",
-        encoding="utf-8",
-    )
+# Search and answer engines named one by one: "User-agent: *" already lets
+# them in, but some of them only trust a line with their own name on it.
+AI_CRAWLERS = [
+    "Googlebot", "Google-Extended", "Bingbot", "GPTBot", "OAI-SearchBot", "ChatGPT-User",
+    "ClaudeBot", "Claude-SearchBot", "Claude-User", "PerplexityBot", "Perplexity-User",
+    "Applebot", "Applebot-Extended", "DuckAssistBot", "YandexBot", "CCBot",
+]
+
+INDEXNOW_KEY = "3f6c1e0a9b7d4c2e8a5f1b6d0c9e7a42"
+
+
+def build_llms_txt(posts=None, videos=None):
+    """/llms.txt: the site in plain Markdown, for language models that read it
+    before — or instead of — the pages themselves."""
+    out = [
+        "# Naturally Artificial",
+        "",
+        "> Naturally Artificial is a long-form video show of founder-to-founder talks in the AI era, "
+        "hosted by Sergey Osipov — a founder turned investor. Founders, operators and investors talk "
+        "about what AI is actually changing in the way companies are built, financed and run.",
+        "",
+        "Key facts:",
+        "",
+        "- Format: long-form video conversations, 30–60 minutes, one or two new episodes a month",
+        "- Language: mostly English; some episodes in Russian with English subtitles or English dubbing",
+        "- Host: Sergey Osipov — thirty years building his own companies, one of which became a unicorn; "
+        "now an investor through Joox VC and Zubr Capital",
+        f"- Watch: YouTube {YT_HANDLE} · Listen: Spotify {SPOTIFY} · Read: Telegram {TELEGRAM}",
+        "- Contact: through the form on the contact page (guests, startup pitches, sponsorship, speaking, press)",
+        "",
+        "## Pages",
+        "",
+    ]
+    for page, path in PAGE_PATHS.items():
+        if page in LOW_PRIORITY:
+            continue
+        title, desc = page_meta(page)
+        out.append(f"- [{title}]({SITE_URL}{path}): {desc}")
+    out.append(f"- [Blog]({SITE_URL}/blog/): every post from the Naturally Artificial Telegram channel, one page each")
+    out += ["", "## Questions", ""]
+    for q, a in FAQ:
+        out.append(f"- **{q}** {re.sub(r'<[^>]+>', '', a)}")
+    if videos:
+        out += ["", "## Episodes", ""]
+        for v in videos:
+            out.append(f"- [{v['title']}]({v['url']}) — {v['date'].date().isoformat()}")
+    if posts:
+        out += ["", "## Latest posts", ""]
+        recent = sorted((p for p in posts if p.get("slug")), key=lambda x: x["id"], reverse=True)[:40]
+        for p in recent:
+            day = p["date"].date().isoformat() if p.get("date") else ""
+            out.append(f"- [{post_title(p)}]({SITE_URL}/blog/{p['slug']}) — {day}")
+    out += ["", "## Optional", "",
+            f"- [Privacy policy]({SITE_URL}/privacy)", f"- [Terms of use]({SITE_URL}/terms)",
+            f"- [Sitemap]({SITE_URL}/sitemap.xml)", ""]
+    (ROOT / "llms.txt").write_text("\n".join(out), encoding="utf-8")
+
+
+def build_redirects(posts=None):
+    """_redirects: every .html spelling answers with a 301 to the clean URL,
+    so each page has exactly one address. The ! forces the rule even though
+    the .html file exists — that is the whole point of it."""
+    lines = ["# generated by build.py", "/index.html  /  301!"]
+    for page, path in PAGE_PATHS.items():
+        if page != "index.html":
+            lines.append(f"/{page}  {path}  301!")
+    lines.append("/blog/index.html  /blog/  301!")
+    try:
+        slugs = json.loads(SLUG_FILE.read_text(encoding="utf-8"))
+        names = sorted(set(slugs.values())) if isinstance(slugs, dict) else []
+    except (OSError, ValueError):
+        names = []
+    if posts:
+        names = sorted(set(names) | {p["slug"] for p in posts if p.get("slug")})
+    for slug in names:
+        lines.append(f"/blog/{slug}.html  /blog/{slug}  301!")
+    (ROOT / "_redirects").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def build_search_files(posts=None, videos=None):
+    robots = ["# Everything here is meant to be found — by search engines and by AI assistants.", ""]
+    for bot in AI_CRAWLERS:
+        robots += [f"User-agent: {bot}", "Allow: /", ""]
+    robots += ["User-agent: *", "Allow: /", "", f"Sitemap: {SITE_URL}/sitemap.xml", ""]
+    (ROOT / "robots.txt").write_text("\n".join(robots), encoding="utf-8")
+    (ROOT / f"{INDEXNOW_KEY}.txt").write_text(INDEXNOW_KEY, encoding="utf-8")
+    build_llms_txt(posts, videos)
+    build_redirects(posts)
 
     dates = git_dates()
     lines = [
@@ -1339,6 +1519,44 @@ def build_search_files(posts=None):
     (ROOT / "sitemap.xml").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"  wrote robots.txt and sitemap.xml"
           f"{'' if dates else ' (no page dates — shallow clone)'}")
+
+
+def indexnow(paths):
+    """Tell Bing, Yandex and the other IndexNow engines which pages changed.
+    Takes site paths or file names; quiet on failure — this is a courtesy."""
+    urls = []
+    for item in paths:
+        item = item.strip()
+        if not item or item.startswith("http"):
+            urls.append(item) if item else None
+            continue
+        name = item.lstrip("/")
+        if name in PAGE_PATHS:
+            urls.append(SITE_URL + PAGE_PATHS[name])
+        elif name.startswith("blog/") and name.endswith(".html"):
+            stem = name[:-5]
+            urls.append(f"{SITE_URL}/blog/" if stem == "blog/index" else f"{SITE_URL}/{stem}")
+    urls = sorted(set(u for u in urls if u))[:10000]
+    if not urls:
+        print("  IndexNow: nothing to send")
+        return
+    body = json.dumps({
+        "host": SITE_URL.split("//", 1)[1],
+        "key": INDEXNOW_KEY,
+        "keyLocation": f"{SITE_URL}/{INDEXNOW_KEY}.txt",
+        "urlList": urls,
+    }).encode()
+    req = urllib.request.Request(
+        "https://api.indexnow.org/indexnow", data=body, method="POST",
+        headers={"Content-Type": "application/json; charset=utf-8", "User-Agent": UA},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            print(f"  IndexNow: {len(urls)} URLs, answer {r.status}")
+    except urllib.error.HTTPError as e:
+        print(f"  IndexNow: {len(urls)} URLs, answer {e.code}")
+    except (urllib.error.URLError, TimeoutError) as e:
+        print(f"  IndexNow failed: {e}")
 
 
 def inject_between(path, marker, content, indent="  "):
@@ -1402,7 +1620,33 @@ def load_cache():
     return dec(data["videos"]), dec(data["posts"]), data.get("tg", ""), data.get("yt", "")
 
 
+def serve(port=8124):
+    """Local preview that answers clean URLs the way Netlify does: /show
+    serves show.html."""
+    import http.server
+    import functools
+
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def send_head(self):
+            path = self.path.split("?", 1)[0].split("#", 1)[0]
+            if path != "/" and not path.endswith("/") and "." not in path.rsplit("/", 1)[-1]:
+                if (ROOT / (path.lstrip("/") + ".html")).is_file():
+                    self.path = path + ".html" + self.path[len(path):]
+            return super().send_head()
+
+    handler = functools.partial(Handler, directory=str(ROOT))
+    print(f"http://localhost:{port}")
+    http.server.ThreadingHTTPServer(("", port), handler).serve_forever()
+
+
 def main():
+    if "--serve" in sys.argv:
+        serve()
+        return
+    if "--ping" in sys.argv:
+        print("IndexNow…")
+        indexnow(sys.argv[sys.argv.index("--ping") + 1:])
+        return
     offline = "--offline" in sys.argv
 
     # First, because it needs no network: a feed outage must not cost the
@@ -1434,6 +1678,7 @@ def main():
         inject("index.html", "featured", render_feature(videos[0]))
         inject("index.html", "episodes", "\n".join(render_episode(v) for v in videos[1:7]))
         inject("show.html", "episodes", "\n".join(render_episode(v) for v in videos))
+        inject("show.html", "episodes-ld", episodes_jsonld(videos))
         inject("guests.html", "episodes", "\n".join(render_episode(v) for v in videos[:6]))
 
     stats = render_stats(all_videos, tg, yt) if all_videos else ""
@@ -1443,13 +1688,16 @@ def main():
     else:
         print("  numbers incomplete — keeping the committed ones")
 
+    inject("show.html", "faq", render_faq())
+
     if posts and tg_complete:
         print("Blog…")
         ordered = build_blog(assign_slugs(posts))
-        build_search_files(posts)
+        build_search_files(posts, videos)
         inject("index.html", "home-posts", render_home_posts(ordered))
     else:
-        build_search_files()
+        # without a complete blog, a rewritten sitemap would lose every post
+        print("  blog incomplete — keeping the committed sitemap and llms.txt")
 
     print("done")
 

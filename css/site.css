@@ -1308,6 +1308,19 @@ button {
   line-height: 1.6;
 }
 
+/* questions are headings for the outline, sized like the keys they sit with */
+h3.row__key {
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: normal;
+}
+
+.row__val a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .row__val strong {
   color: var(--fg);
   font-weight: 600;

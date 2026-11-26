@@ -45,3 +45,7 @@ jobs:
           git add -A
           git commit -m "Daily refresh: episodes, posts and numbers"
           git push
+          # tell Bing, Yandex and the other IndexNow engines what changed;
+          # a minute's pause lets Netlify publish it first
+          sleep 60
+          python3 build.py --ping $(git diff --name-only HEAD~1 HEAD -- '*.html')
