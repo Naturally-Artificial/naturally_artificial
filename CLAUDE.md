@@ -59,6 +59,15 @@ seen, so an offline render from an old cache would roll them back; `--offline`
 refuses when its cache is behind `blog/slugs.json`. Then run the full build.
 Run the full build in the background and do not edit site files while it runs.
 
+## Episodes in Russian
+
+The site is in English. Some episodes are published on YouTube in Russian
+(YouTube has no English localisation for them). Their English title and
+summary live in `episodes_en.json`, keyed by video id; `build.py` shows those
+instead of the Russian originals and keeps `inLanguage: "ru"` in the
+structured data. When a new Russian episode appears, the build prints
+`no English title yet for …` — translate it, add it to the file, rebuild.
+
 ## Do not break
 
 - **`blog/slugs.json`** is the ledger of post addresses. A post's address is

@@ -1,0 +1,23 @@
+{
+  "_about": "English titles and summaries for episodes published in Russian, keyed by YouTube video id. build.py shows these on the site in place of the Russian originals. Add one for every new Russian episode; the build lists the ones still missing.",
+  "miIiP_dRMVk": {
+    "title": "Venture Capital vs Private Equity: Golf with Oleg Khusaenov, Zubr Capital",
+    "summary": "Venture capital sprays a bucket of balls into the distance; private equity drags one founder all the way to the finish. Oleg Khusaenov of Zubr Capital explains the food chain of capital over a round of golf"
+  },
+  "tUY8yHk4-tE": {
+    "title": "Flight School in Florida: Flying with Andrei Borisevich and Pricing a Round-the-World Trip",
+    "summary": "He lived out three classic post-Soviet dreams at once: swapped an office career for a pilot's seat at 35, left grey Moscow for sunny Florida and built a business from scratch"
+  },
+  "IYxKxLn-d0M": {
+    "title": "Startup Idea → Prototype → Investor Pitch. One Day at a Hackathon",
+    "summary": "Ever been to a hackathon? Here is what it feels like: a report from the Zubr Capital Young Hackathon in Warsaw. One day of drive, chaos and experience"
+  },
+  "GC7OdSC-JMw": {
+    "title": "Mitra Geranin: How to Build a Country's No. 1 Car Classifieds Site",
+    "summary": "Mitra Geranin, co-owner and former CEO of av.by, took a little-known site to 90% of Belarus's car classifieds market and an exit. Two founders who have known each other for fifteen years talk shop"
+  },
+  "1QxBQd8UVgY": {
+    "title": "Can't Manage AI Agents? You're Fired! Leadership in a New Industrial Reality",
+    "summary": "A psychologist and an entrepreneur on how leadership is changing, how to make the most of the coming reshuffle of markets, and how many years businesses have left to adapt to a new industrial reality"
+  }
+}

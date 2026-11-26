@@ -507,6 +507,32 @@ def lang_attr(text):
     return ' lang="ru"' if cyr > lat else ""
 
 
+EPISODES_EN = ROOT / "episodes_en.json"
+
+
+def localize(videos):
+    """The site is in English. Episodes published in Russian are shown under
+    the English title and summary kept in episodes_en.json; the original
+    language is remembered, so search engines are still told what the
+    audio is in."""
+    try:
+        table = json.loads(EPISODES_EN.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        table = {}
+    missing = []
+    for v in videos:
+        v.setdefault("lang", "ru" if lang_attr(v["title"]) else "en")
+        en = table.get(v["id"])
+        if en:
+            v["title"] = en.get("title") or v["title"]
+            v["summary"] = en.get("summary", v["summary"])
+        elif v["lang"] == "ru" and v["date"] >= YT_MIN_DATE and v["channel"] == YT_CHANNEL_ID:
+            missing.append(v)
+    for v in missing:
+        print(f"  no English title yet for {v['id']}: {v['title']} — add it to episodes_en.json")
+    return videos
+
+
 def episode_meta(v):
     views = f"{v['views']} views • " if v["views"] else ""
     return f"{views}{ago(v['date'])}"
@@ -1273,7 +1299,7 @@ def episodes_jsonld(videos):
             "uploadDate": v["date"].isoformat(),
             "contentUrl": v["url"],
             "embedUrl": f"https://www.youtube-nocookie.com/embed/{v['id']}",
-            "inLanguage": "ru" if lang_attr(v["title"]) else "en",
+            "inLanguage": v.get("lang") or ("ru" if lang_attr(v["title"]) else "en"),
             "partOfSeries": {"@id": f"{SITE_URL}/show#podcast"},
         }
         if v.get("views_n"):
@@ -1682,6 +1708,7 @@ def main():
         if all_videos and posts and tg_complete:
             save_cache(all_videos, posts, tg, yt)
 
+    localize(all_videos)
     videos = [v for v in all_videos if v["date"] >= YT_MIN_DATE]
     print(f"  {len(videos)} episodes")
     if not videos and not posts:
