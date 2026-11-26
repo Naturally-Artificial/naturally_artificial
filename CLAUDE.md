@@ -54,6 +54,9 @@ After editing a page, the header, the footer or `build.py`, re-render:
     python3 build.py             # full run: fetches YouTube and Telegram, takes minutes
 
 On a fresh clone there is no cache yet, so the first run must be the full one.
+The daily Action keeps adding posts and episodes the local cache has never
+seen, so an offline render from an old cache would roll them back; `--offline`
+refuses when its cache is behind `blog/slugs.json`. Then run the full build.
 Run the full build in the background and do not edit site files while it runs.
 
 ## Do not break

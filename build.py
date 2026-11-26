@@ -1656,6 +1656,19 @@ def main():
 
     if offline:
         all_videos, posts, tg, yt = load_cache()
+        # The daily Action commits posts this machine's cache has never seen.
+        # Rendering from a cache that is behind the ledger would delete their
+        # pages and roll the episodes and numbers back — refuse instead.
+        try:
+            ledger_max = max(int(k) for k in json.loads(SLUG_FILE.read_text(encoding="utf-8")))
+        except (OSError, ValueError):
+            ledger_max = 0
+        cache_max = max((p["id"] for p in posts), default=0)
+        if cache_max < ledger_max:
+            sys.exit(
+                f"--offline: the cache stops at post {cache_max}, the committed blog has {ledger_max}. "
+                "Pull, then run a full `python3 build.py` once to refresh the cache."
+            )
         tg_complete = True
         print(f"  from cache: {len(all_videos)} videos, {len(posts)} posts")
     else:
