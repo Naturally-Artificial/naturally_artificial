@@ -810,6 +810,23 @@ SLUG_FILE = BLOG_DIR / "slugs.json"
 SLUG_MAX = 60
 
 
+# Cyrillic letters that look exactly like Latin ones. A post typed on a
+# Russian layout now and then has "Сommunity" with a Cyrillic С: it reads the
+# same, but to search it is a different word.
+HOMOGLYPHS = str.maketrans("АВСЕНКМОРТХаеорсухі", "ABCEHKMOPTXaeopcyxi")
+
+
+def fix_homoglyphs(text):
+    """Swap look-alike Cyrillic letters for Latin ones inside words that are
+    otherwise Latin; words that are genuinely Russian are left alone."""
+    def fix(m):
+        w = m.group(0)
+        if re.search(r"[A-Za-z]", w) and re.search(r"[А-Яа-яЁёі]", w):
+            return w.translate(HOMOGLYPHS)
+        return w
+    return re.sub(r"[A-Za-zА-Яа-яЁёі]+", fix, text)
+
+
 def post_plain(p):
     """The post as plain text, for titles, descriptions and slugs."""
     t = re.sub(r"<br\s*/?>", " ", p.get("text", ""))
@@ -1729,6 +1746,9 @@ def main():
         print("  numbers incomplete — keeping the committed ones")
 
     inject("show.html", "faq", render_faq())
+
+    for p in posts:
+        p["text"] = fix_homoglyphs(p.get("text", ""))
 
     if posts and tg_complete:
         print("Blog…")
