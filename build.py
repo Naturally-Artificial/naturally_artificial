@@ -83,7 +83,7 @@ OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
 # Cache-busting suffix for the stylesheet and the script. Every page gets its
 # links from here, so bumping this one number is the whole job.
-ASSET_V = 58
+ASSET_V = 59
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"

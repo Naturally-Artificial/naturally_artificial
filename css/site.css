@@ -1252,6 +1252,23 @@ button {
   mask: url("/assets/img/host-about-mask.png?v=2") center / 100% 100% no-repeat;
 }
 
+/* links to the companies in the career timeline */
+.timeline__name a,
+.timeline__what a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(75, 186, 255, 0.55);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.timeline__name a:hover,
+.timeline__what a:hover {
+  color: var(--blue);
+  text-decoration-color: var(--blue);
+}
+
 /* ---------- Fact tiles, lists, steps ---------- */
 
 .tiles {
