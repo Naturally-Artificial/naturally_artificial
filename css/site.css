@@ -461,11 +461,27 @@ button {
   transition: background 0.3s ease, border-color 0.3s ease;
 }
 
-.site-header.is-scrolled {
+/* The bar's tint and blur sit on a pseudo-element: a backdrop-filter on the
+   header itself would make it the containing block of the fixed mobile menu
+   and squeeze the menu into the 68px bar. */
+.site-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background: rgba(16, 16, 16, 0.78);
   -webkit-backdrop-filter: saturate(160%) blur(18px);
   backdrop-filter: saturate(160%) blur(18px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.site-header.is-scrolled {
   border-bottom-color: var(--line);
+}
+
+.site-header.is-scrolled::before {
+  opacity: 1;
 }
 
 .site-header__inner {
@@ -2353,6 +2369,17 @@ h3.row__key {
 
   .nav-open {
     overflow: hidden;
+  }
+
+  /* on phones the bar is solid, so Safari tints its own toolbar to match
+     instead of showing the page through it */
+  .site-header.is-scrolled,
+  .nav-open .site-header {
+    background: var(--black);
+  }
+
+  .site-header::before {
+    display: none;
   }
 
   .site-nav__link {
