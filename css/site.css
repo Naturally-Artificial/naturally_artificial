@@ -1252,21 +1252,33 @@ button {
   mask: url("/assets/img/host-about-mask.png?v=2") center / 100% 100% no-repeat;
 }
 
-/* links to the companies in the career timeline */
+/* links to the companies in the career timeline: no underlines in a list
+   this dense. A company name carries a small arrow; a link inside the grey
+   description is simply white, and both turn blue on hover */
 .timeline__name a,
 .timeline__what a {
-  color: inherit;
-  text-decoration: underline;
-  text-decoration-color: rgba(75, 186, 255, 0.55);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+  color: var(--fg);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.timeline__name a::after {
+  content: "\2197";
+  display: inline-block;
+  margin-left: 0.3em;
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--blue);
+  transition: transform 0.2s ease;
 }
 
 .timeline__name a:hover,
 .timeline__what a:hover {
   color: var(--blue);
-  text-decoration-color: var(--blue);
+}
+
+.timeline__name a:hover::after {
+  transform: translate(2px, -2px);
 }
 
 /* ---------- Fact tiles, lists, steps ---------- */
