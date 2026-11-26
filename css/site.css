@@ -1218,28 +1218,38 @@ button {
   padding-bottom: clamp(48px, 6vw, 96px);
 }
 
+/* The photograph's frame cuts through the right sleeve, so the figure is
+   pushed out to the right edge of the window: the cut lands on the edge of
+   the page, where it reads as the page cropping him, not the photo. The
+   negative margin is exactly the gap between the container and the window. */
 .portrait-card {
-  position: relative;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
+  margin-right: calc(-1 * max(var(--pad), (100vw - var(--max)) / 2));
+}
+
+.portrait-card__fig {
+  position: relative;
+  width: min(100%, 520px);
 }
 
 .page-head--portrait .portrait-card .shape-wrap {
-  width: 118%;
+  width: 112%;
   top: auto;
   right: auto;
-  left: 50%;
-  bottom: -22%;
+  left: 46%;
+  bottom: -24%;
   transform: translateX(-50%);
 }
 
-/* the backdrop is keyed out with a mask; the right edge of the mask fades,
-   where the sleeve runs into the frame of the photograph */
+/* the backdrop is removed with an alpha mask, choked a few pixels inside the
+   figure so no rim of the original background survives */
 .portrait-card img {
   position: relative;
-  width: min(100%, 500px);
-  -webkit-mask: url("/assets/img/host-about-mask.png") center / 100% 100% no-repeat;
-  mask: url("/assets/img/host-about-mask.png") center / 100% 100% no-repeat;
+  display: block;
+  width: 100%;
+  -webkit-mask: url("/assets/img/host-about-mask.png?v=2") center / 100% 100% no-repeat;
+  mask: url("/assets/img/host-about-mask.png?v=2") center / 100% 100% no-repeat;
 }
 
 /* ---------- Fact tiles, lists, steps ---------- */
@@ -2393,9 +2403,8 @@ h3.row__key {
     opacity: 0.55;
   }
 
-  .portrait-card {
-    max-width: 420px;
-    margin-inline: auto;
+  .portrait-card__fig {
+    width: min(92%, 420px);
   }
 
   .page-head--portrait .container > div:first-child {
