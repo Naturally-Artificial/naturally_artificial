@@ -173,6 +173,7 @@ const TOPICS = {
   guest: "Suggest a guest",
   startup: "Pitch a startup",
   sponsors: "Advertising and collaborations",
+  speaking: "Invite to speak",
   press: "Press",
 };
 

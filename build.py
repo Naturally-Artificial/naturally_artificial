@@ -83,7 +83,7 @@ OG_IMAGE = "/assets/og-image.jpg"  # 1200x630
 
 # Cache-busting suffix for the stylesheet and the script. Every page gets its
 # links from here, so bumping this one number is the whole job.
-ASSET_V = 54
+ASSET_V = 55
 
 YT_CHANNEL_ID = "UCCSooyKwLmDjs0PHloaAzig"
 YT_HANDLE = "https://www.youtube.com/@Naturally_Artificial"
@@ -1224,7 +1224,7 @@ def structured_data(path, desc):
         "@id": f"{SITE_URL}/about#sergey",
         "name": "Sergey Osipov",
         "url": f"{SITE_URL}/about",
-        "jobTitle": "Founder, early-stage investor and host of Naturally Artificial",
+        "jobTitle": "Founder, investor and host of Naturally Artificial",
         "sameAs": SOCIAL_HOST,
     }
     if path == "index.html":

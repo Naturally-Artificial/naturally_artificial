@@ -1205,8 +1205,8 @@ button {
    stands straight on the page with the shape showing through */
 .portrait-card img {
   width: 100%;
-  -webkit-mask: url("/assets/img/host-illustrated-mask.png") center / 100% 100% no-repeat;
-  mask: url("/assets/img/host-illustrated-mask.png") center / 100% 100% no-repeat;
+  -webkit-mask: url("/assets/img/host-mask.png") center / 100% 100% no-repeat;
+  mask: url("/assets/img/host-mask.png") center / 100% 100% no-repeat;
 }
 
 /* ---------- Fact tiles, lists, steps ---------- */
@@ -1807,12 +1807,36 @@ button {
 
 /* each topic is a button: choosing one here fills in the form's select */
 .contact__topic {
+  position: relative;
   display: block;
   width: 100%;
-  padding: 18px 0;
+  padding: 18px 0 18px 36px;
   border-bottom: 1px solid var(--line);
   text-align: left;
+  cursor: pointer;
   transition: color 0.2s ease;
+}
+
+/* a radio mark, so the list reads as a choice that fills in the form */
+.contact__topic::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 22px;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--muted);
+  border-radius: 50%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.contact__topic:hover::before {
+  border-color: var(--blue);
+}
+
+.contact__topic[aria-pressed="true"]::before {
+  border-color: var(--blue);
+  box-shadow: inset 0 0 0 4px var(--black), inset 0 0 0 9px var(--blue);
 }
 
 .contact__topic strong {
