@@ -537,11 +537,19 @@ def youtube_english(vid):
         title = json.loads(t.group(1)).strip() if t else ""
         desc = json.loads(d.group(1)) if d else ""
     except ValueError:
-        return None
+        title, desc = "", ""
+    # the extra audio tracks YouTube lists ("English", "English (US)") and
+    # the caption languages the channel uploaded itself
+    tracks = set(re.findall(r'"audioTrack":\{"displayName":"([^"]+)"', page))
+    dub = any(n.startswith("English") and "original" not in n for n in tracks)
+    caps = re.search(r'"captionTracks":\[(.*?)\]', page)
+    subs = bool(caps and re.search(r'"languageCode":"en(?:-[A-Za-z]+)?"', caps.group(1)))
+    out = {"dub_en": dub, "subs_en": subs}
     # a translation, not the original handed back: no Russian words in it
-    if not title or has_russian(title):
-        return None
-    return {"title": title, "summary": "" if has_russian(desc) else summarize(desc)}
+    if title and not has_russian(title):
+        out["title"] = title
+        out["summary"] = "" if has_russian(desc) else summarize(desc)
+    return out
 
 
 def fetch_english(videos):
@@ -554,7 +562,10 @@ def fetch_english(videos):
         if not has_russian(v["title"] + " " + v.get("summary", "")):
             continue
         en = youtube_english(v["id"])
-        if en:
+        if not en:
+            continue
+        v["dub_en"], v["subs_en"] = en["dub_en"], en["subs_en"]
+        if en.get("title"):
             v["title_en"], v["summary_en"] = en["title"], en["summary"]
             found += 1
     print(f"  English from YouTube Studio for {found} episode(s)")
@@ -588,9 +599,21 @@ def localize(videos):
     return videos
 
 
+def language_note(v):
+    """How a non-English episode can be followed in English."""
+    if v.get("lang") != "ru":
+        return ""
+    if v.get("dub_en"):
+        return "English dubbing"
+    if v.get("subs_en"):
+        return "In Russian, English subtitles"
+    return "In Russian"
+
+
 def episode_meta(v):
     views = f"{v['views']} views • " if v["views"] else ""
-    return f"{views}{ago(v['date'])}"
+    note = language_note(v)
+    return f"{views}{ago(v['date'])}" + (f" • {note}" if note else "")
 
 
 def render_episode(v):
@@ -1371,7 +1394,7 @@ def episodes_jsonld(videos):
             "uploadDate": v["date"].isoformat(),
             "contentUrl": v["url"],
             "embedUrl": f"https://www.youtube-nocookie.com/embed/{v['id']}",
-            "inLanguage": v.get("lang") or ("ru" if lang_attr(v["title"]) else "en"),
+            "inLanguage": ["ru", "en"] if v.get("dub_en") else (v.get("lang") or "en"),
             "partOfSeries": {"@id": f"{SITE_URL}/show#podcast"},
         }
         if v.get("views_n"):
@@ -1538,7 +1561,9 @@ def build_llms_txt(posts=None, videos=None):
     if videos:
         out += ["", "## Episodes", ""]
         for v in videos:
-            out.append(f"- [{v['title']}]({v['url']}) — {v['date'].date().isoformat()}")
+            note = language_note(v)
+            out.append(f"- [{v['title']}]({v['url']}) — {v['date'].date().isoformat()}"
+                       + (f" ({note})" if note else ""))
     if posts:
         out += ["", "## Latest posts", ""]
         recent = sorted((p for p in posts if p.get("slug")), key=lambda x: x["id"], reverse=True)[:40]
