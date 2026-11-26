@@ -1201,12 +1201,45 @@ button {
   align-items: center;
 }
 
-/* no card behind it: the backdrop is keyed out with a mask, so the figure
-   stands straight on the page with the shape showing through */
+/* The host's page is composed like the home page: the cutout stands on the
+   head's bottom rule with the shape turning behind it, instead of ending in
+   mid-air above the next section. */
+.page-head--portrait {
+  padding-bottom: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.page-head--portrait .container {
+  align-items: end;
+}
+
+.page-head--portrait .container > div:first-child {
+  align-self: center;
+  padding-bottom: clamp(48px, 6vw, 96px);
+}
+
+.portrait-card {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.page-head--portrait .portrait-card .shape-wrap {
+  width: 118%;
+  top: auto;
+  right: auto;
+  left: 50%;
+  bottom: -22%;
+  transform: translateX(-50%);
+}
+
+/* the backdrop is keyed out with a mask; the right edge of the mask fades,
+   where the sleeve runs into the frame of the photograph */
 .portrait-card img {
-  width: 100%;
-  -webkit-mask: url("/assets/img/host-mask.png") center / 100% 100% no-repeat;
-  mask: url("/assets/img/host-mask.png") center / 100% 100% no-repeat;
+  position: relative;
+  width: min(100%, 500px);
+  -webkit-mask: url("/assets/img/host-about-mask.png") center / 100% 100% no-repeat;
+  mask: url("/assets/img/host-about-mask.png") center / 100% 100% no-repeat;
 }
 
 /* ---------- Fact tiles, lists, steps ---------- */
@@ -2362,6 +2395,11 @@ h3.row__key {
 
   .portrait-card {
     max-width: 420px;
+    margin-inline: auto;
+  }
+
+  .page-head--portrait .container > div:first-child {
+    padding-bottom: 8px;
   }
 }
 
