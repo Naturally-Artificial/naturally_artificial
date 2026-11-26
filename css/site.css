@@ -2107,10 +2107,16 @@ h3.row__key {
   border-top: 1px solid var(--line);
 }
 
+/* The block reaches out to the right edge of the window (and pads back in
+   by the same amount), so the shape is cut by the edge of the page rather
+   than by the edge of the text column, which left a strip of empty page. */
 .site-footer__cta {
+  --bleed: max(var(--pad), (100vw - var(--max)) / 2);
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  margin-right: calc(-1 * var(--bleed));
+  padding-right: var(--bleed);
   padding-block: clamp(56px, 8vw, 128px);
 }
 
