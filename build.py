@@ -510,26 +510,81 @@ def lang_attr(text):
 EPISODES_EN = ROOT / "episodes_en.json"
 
 
+def has_russian(text):
+    return bool(re.search(r"[А-Яа-яЁё]{2,}", text or ""))
+
+
+def youtube_english(vid):
+    """The English title and description the channel set in YouTube Studio
+    (Subtitles → title and description translation), or None.
+
+    The watch page asked for in English carries them in two places only:
+    the title in videoPrimaryInfoRenderer, the description in
+    attributedDescription. Everything else on the page keeps the original."""
+    req = urllib.request.Request(
+        f"https://www.youtube.com/watch?v={vid}&hl=en&persist_hl=1",
+        headers={"User-Agent": UA, "Accept-Language": "en-US,en", "Cookie": "SOCS=CAI; PREF=hl=en"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            page = r.read().decode("utf-8", "replace")
+    except (urllib.error.URLError, TimeoutError):
+        return None
+    string = r'("(?:[^"\\]|\\.)*")'
+    t = re.search(r'"videoPrimaryInfoRenderer":\{"title":\{"runs":\[\{"text":' + string, page)
+    d = re.search(r'"attributedDescription":\{"content":' + string, page)
+    try:
+        title = json.loads(t.group(1)).strip() if t else ""
+        desc = json.loads(d.group(1)) if d else ""
+    except ValueError:
+        return None
+    # a translation, not the original handed back: no Russian words in it
+    if not title or has_russian(title):
+        return None
+    return {"title": title, "summary": "" if has_russian(desc) else summarize(desc)}
+
+
+def fetch_english(videos):
+    """Asks YouTube for the English version of every recent episode of the
+    show that carries Russian text. A handful of requests per build."""
+    found = 0
+    for v in videos:
+        if v["channel"] != YT_CHANNEL_ID or v["date"] < YT_MIN_DATE:
+            continue
+        if not has_russian(v["title"] + " " + v.get("summary", "")):
+            continue
+        en = youtube_english(v["id"])
+        if en:
+            v["title_en"], v["summary_en"] = en["title"], en["summary"]
+            found += 1
+    print(f"  English from YouTube Studio for {found} episode(s)")
+
+
 def localize(videos):
-    """The site is in English. Episodes published in Russian are shown under
-    the English title and summary kept in episodes_en.json; the original
-    language is remembered, so search engines are still told what the
-    audio is in."""
+    """The site is in English. For an episode published in Russian it shows,
+    in order of preference: the English title and description set in
+    YouTube Studio, then the translation kept in episodes_en.json, then the
+    original. The original language is remembered, so search engines are
+    still told what the audio is in."""
     try:
         table = json.loads(EPISODES_EN.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         table = {}
     missing = []
     for v in videos:
-        v.setdefault("lang", "ru" if lang_attr(v["title"]) else "en")
-        en = table.get(v["id"])
-        if en:
-            v["title"] = en.get("title") or v["title"]
-            v["summary"] = en.get("summary", v["summary"])
-        elif v["lang"] == "ru" and v["date"] >= YT_MIN_DATE and v["channel"] == YT_CHANNEL_ID:
+        v.setdefault("lang", "ru" if has_russian(v["title"]) else "en")
+        own = table.get(v["id"]) or {}
+        if v.get("title_en"):
+            v["title"] = v["title_en"]
+            v["summary"] = v.get("summary_en") or own.get("summary") or v["summary"]
+        elif own:
+            v["title"] = own.get("title") or v["title"]
+            v["summary"] = own.get("summary", v["summary"])
+        elif v["channel"] == YT_CHANNEL_ID and v["date"] >= YT_MIN_DATE and has_russian(v["title"] + " " + v["summary"]):
             missing.append(v)
     for v in missing:
-        print(f"  no English title yet for {v['id']}: {v['title']} — add it to episodes_en.json")
+        print(f"  no English title yet for {v['id']}: {v['title']} — add it in YouTube Studio "
+              "(Subtitles → title and description) or to episodes_en.json")
     return videos
 
 
@@ -1717,6 +1772,7 @@ def main():
     else:
         print("YouTube…")
         _, all_videos = fetch_youtube()
+        fetch_english(all_videos)
         print("Telegram…")
         posts, tg_complete = fetch_telegram()
         print(f"  {len(posts)} posts{'' if tg_complete else ' (incomplete — keeping the committed blog)'}")
