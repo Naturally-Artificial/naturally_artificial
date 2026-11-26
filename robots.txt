@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://naturally-artificial.netlify.app/sitemap.xml
+Sitemap: https://naturallyartificial.com/sitemap.xml

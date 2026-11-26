@@ -1,7 +1,9 @@
 # Naturally Artificial — the site
 
 Static site for the YouTube show Naturally Artificial (host: Sergey Osipov).
-Live at https://naturally-artificial.netlify.app. Plain HTML, CSS and JS — no
+Live at https://naturallyartificial.com (DNS at GoDaddy: `A @ 75.2.60.5`,
+`CNAME www → naturally-artificial.netlify.app`; the Netlify address
+301-redirects to the domain). Plain HTML, CSS and JS — no
 framework, no npm. `build.py` (Python standard library only) generates
 everything that is generated.
 

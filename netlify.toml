@@ -5,6 +5,14 @@
   command = ""
   publish = "."
 
+# The site's home is its own domain. The Netlify address keeps working, but
+# only as a pointer to it, so search engines see one copy of every page.
+[[redirects]]
+  from = "https://naturally-artificial.netlify.app/*"
+  to = "https://naturallyartificial.com/:splat"
+  status = 301
+  force = true
+
 # Publishing the repo root means the build script is served alongside the
 # pages. It holds no secrets, but it isn't part of the site and shouldn't be
 # downloadable or indexable.
